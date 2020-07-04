@@ -44,6 +44,10 @@ impl<T> HashStore<T> {
     pub fn len(&self) -> usize {
         self.items.len()
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.items.len() == 0
+    }
 }
 
 impl<T: Entity + Clone> EntityStore<T> for HashStore<T> {

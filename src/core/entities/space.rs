@@ -50,7 +50,7 @@ impl Describe for Space {
     fn describe(&self, _world: &World) -> Markup {
         let mut text = self.description.text.clone();
 
-        if self.inventory.len() > 0 {
+        if !self.inventory.is_empty() {
             let items: Vec<&str> = self.inventory.items().iter().map(|i| i.name()).collect();
 
             text += &format!("\n\nYou see {} here.", items.join(", "));
