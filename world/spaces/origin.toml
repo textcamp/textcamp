@@ -1,0 +1,19 @@
+[space]
+identifier = "ORIGIN"
+
+[description]
+day = """
+You're in the middle of a vast field, surrounded by golden wheat. It sways as if blown by the wind -- but you feel no breeze.
+
+In front of you stands a small weathered [[shed]]. The door swings on rusted hinges, but is eerily silent."""
+
+[actions]
+shed = "go in"
+
+[exits]
+in = "SHED"
+
+[[spawn]]
+item = "ROCK"
+chance = 10
+max = 3

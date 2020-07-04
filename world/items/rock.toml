@@ -1,0 +1,6 @@
+[item]
+identifier = "ROCK"
+name = "rock"
+
+[description]
+day = "A small, grey rock."

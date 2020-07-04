@@ -1,0 +1,19 @@
+[mob]
+identifier = "MOSQUITO"
+name = "mosquito"
+
+[description]
+day = "A hungry mosquito!"
+
+[attributes]
+strength = 1
+dexterity = 5
+constitution = 1
+intelligence = 1
+wisdom = 1
+charisma = 1
+
+[[attacks]]
+name = "bite"
+type = "piercing"
+damage = "1"

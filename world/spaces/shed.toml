@@ -1,0 +1,11 @@
+[space]
+identifier = "SHED"
+
+[description]
+day = """It's dark and dusty. Light filters in through cracks in the walls. A door leads [[outside]]."""
+
+[actions]
+outside = "go out"
+
+[exits]
+out = "ORIGIN"
