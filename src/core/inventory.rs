@@ -34,7 +34,7 @@ impl Inventory {
     pub fn count(&self, name: &str) -> usize {
         self.items()
             .iter()
-            .filter(|i| i.name == name)
+            .filter(|i| i.prototype == name)
             .count()
     }
 
