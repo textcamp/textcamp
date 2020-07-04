@@ -1,20 +1,19 @@
-FROM rust:1.44.1-alpine
+# builder
+
+FROM rust:1.44.1-alpine as builder
 
 WORKDIR /usr/src/myapp
+
 COPY . .
 
 RUN apk add --no-cache musl-dev
+RUN cargo build --release
 RUN cargo install --path .
 
-# App configuration ------------------
+# target image
 
-# What log level the container operates at
-ENV RUST_LOG=info
+FROM alpine:latest
 
-# The URL (host and port) the server runs on
-ENV SERVER_URL="0.0.0.0:8080"
-
-# The path to the templates
-ENV WORLD_ROOT="./world"
+COPY --from=builder /usr/local/cargo/bin/server /usr/local/bin/server
 
 CMD ["server"]
