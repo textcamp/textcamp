@@ -55,7 +55,7 @@ fn tokenize(input: &str) -> Vec<String> {
                 }
             } else if QUOTES.contains(&c) {
                 quoted = Some(c);
-            } else {
+            } else if c.is_alphanumeric() {
                 buffer.push(c);
             }
         }
