@@ -48,6 +48,11 @@ let route = (json) => {
         showCharacter(json.character);
         return;
     }
+
+    if (json.population) {
+        showPopulation(json.population);
+        return;
+    }
 }
 
 
@@ -141,6 +146,14 @@ let showInventory = (inventory) => {
     output += "</ul>";
 
     record('inventory', output);
+}
+
+let showPopulation = (population) => {
+    let output = "<ul>"
+    population.forEach(i => { output += `<li>${i}</li>` });
+    output += "</ul>";
+
+    record('population', output);
 }
 
 let showTime = (time) => {

@@ -16,18 +16,7 @@ async fn ws_index(
     let world = data.into_inner();
 
     // TODO: Login!
-    let mut character = world
-        .read()
-        .unwrap()
-        .mob_prototypes
-        .create("HERO")
-        .expect("Could not find HERO prototype!!");
-
-    let character_id = character.entity_id().clone();
-    character.space_id = Identifier::origin();
-
-    world.read().map(|w| w.mobs.insert(character)).unwrap();
-
+    let character_id = world.read().unwrap().create_hero();
     ws::start(Connection::new(world, character_id), &req, stream)
 }
 

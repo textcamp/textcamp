@@ -22,8 +22,8 @@ impl Update {
         Update::new(to, wrapper)
     }
 
-    pub fn population(to: &Identifier, message: &Population) -> Self {
-        let wrapper = Wrapper::Population(message.to_owned());
+    pub fn population(to: &Identifier, message: Vec<String>) -> Self {
+        let wrapper = Wrapper::Population(message);
         Update::new(to, wrapper)
     }
 
@@ -89,7 +89,7 @@ pub enum Wrapper {
     Space(Markup),
     Character(Markup),
     Item(Markup),
-    Population(Population),
+    Population(Vec<String>),
     Time(DateTime),
     Inventory(Vec<String>),
 }

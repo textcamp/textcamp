@@ -3,6 +3,8 @@ use log::{error, trace};
 use crate::core::entities::*;
 use crate::core::*;
 
+use std::time::Instant;
+
 #[derive(Debug)]
 pub struct Action {
     from: Identifier,
@@ -20,7 +22,7 @@ impl Action {
 
 #[derive(Debug)]
 pub struct World {
-    // capabilities
+    // entities which receive ticks, have state, etc.
     pub mobs: HashStore<Mob>,
     pub spaces: HashStore<Space>,
 
@@ -101,7 +103,12 @@ impl World {
     }
 
     pub fn melee(&self) -> Vec<Update> {
-        self.mobs.fight(&self, &mut Dice::new())
+        let started = Instant::now();
+        let output = self.spaces.melee(&self, &mut Dice::new());
+
+        trace!("⚔️  {:?} - {:?}", started.elapsed(), output);
+
+        output
     }
 
     pub fn mob_space(&self, mob_id: &Identifier) -> Result<(Mob, Space), TCError> {
@@ -109,6 +116,27 @@ impl World {
         let space = self.spaces.get(&mob.space_id)?;
 
         Ok((mob, space))
+    }
+
+    pub fn create_hero(&self) -> Identifier {
+        let mut hero = self
+            .mob_prototypes
+            .create("HERO")
+            .expect("Could not find HERO prototype!!");
+
+        let mut origin = self
+            .spaces
+            .get(&Identifier::origin())
+            .expect("Could not load ORIGIN space!!");
+
+        hero.space_id = origin.entity_id().clone();
+        let hero_identifier = hero.entity_id().clone();
+
+        self.mobs.insert(hero);
+        origin.population.add(&hero_identifier);
+        self.spaces.insert(origin);
+
+        hero_identifier
     }
 
     // ACTIONS! ---------------------------------------------------------------------------------
@@ -119,7 +147,7 @@ impl World {
 
         output.push(Update::exits(mob_id, &space.exits));
         output.push(Update::character(mob_id, mob.describe(&self)));
-        output.push(Update::population(mob_id, &space.population));
+        output.push(Update::population(mob_id, space.population.names(&self)));
         output.push(Update::space(mob_id, space.describe(&self)));
         output.push(Update::time(mob_id, &self.clock.into()));
         output.push(Update::inventory(mob_id, &mob.inventory));
@@ -167,7 +195,10 @@ impl World {
         // craft the update
         output.push(Update::space(mob_id, new_space.describe(&self)));
         output.push(Update::exits(mob_id, &new_space.exits));
-        output.push(Update::population(mob_id, &new_space.population));
+        output.push(Update::population(
+            mob_id,
+            new_space.population.names(&self),
+        ));
 
         Ok(output)
     }

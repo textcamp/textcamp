@@ -25,4 +25,20 @@ impl Population {
     pub fn identifiers(&self) -> &[Identifier] {
         &self.mobs
     }
+
+    pub fn names(&self, world: &World) -> Vec<String> {
+        self.mobs
+            .iter()
+            .flat_map(|i| world.mobs.get(i))
+            .map(|m| m.name)
+            .collect()
+    }
+
+    pub fn prototypes(&self, world: &World) -> Vec<String> {
+        self.mobs
+            .iter()
+            .flat_map(|i| world.mobs.get(i))
+            .map(|m| m.prototype)
+            .collect()
+    }
 }

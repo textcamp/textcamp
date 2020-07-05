@@ -31,6 +31,9 @@ impl From<Importer> for Injector {
             injector.prototype.intelligence = attrs.intelligence;
             injector.prototype.wisdom = attrs.wisdom;
             injector.prototype.charisma = attrs.charisma;
+
+            // default health = constitution
+            injector.prototype.health = attrs.constitution;
         }
 
         injector

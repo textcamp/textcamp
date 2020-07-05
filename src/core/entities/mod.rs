@@ -5,6 +5,7 @@ pub use mob::{Attack, Doing, Mob, Restore};
 pub use space::Space;
 
 use crate::core::{Dice, Identifier, Markup, TCError, Update, World};
+use log::trace;
 use std::collections::HashMap;
 use std::sync::RwLock;
 
@@ -12,20 +13,9 @@ pub trait Entity {
     fn entity_id(&self) -> &Identifier;
 }
 
+// TODO: Expiration to clean up dead / inactive entities?
 pub trait Tickable {
     fn tick(&mut self, world: &World, dice: &mut Dice) -> Vec<Update>;
-}
-
-pub trait Fightable {
-    fn is_alive(&self) -> bool;
-
-    fn is_dead(&self) -> bool {
-        !self.is_alive()
-    }
-
-    fn fight(&self, world: &World, dice: &mut Dice) -> Option<Attack>;
-    fn harm(&mut self, attack: Attack) -> Vec<Update>;
-    fn restore(&mut self, restore: Restore) -> Vec<Update>;
 }
 
 pub trait Named {
@@ -36,6 +26,16 @@ pub trait Describe {
     fn describe(&self, world: &World) -> Markup;
 }
 
+pub trait Located {
+    fn location(&self) -> &Identifier;
+}
+
+pub trait Melee {
+    fn population(&self) -> &[Identifier];
+    fn melee(&mut self, world: &World, dice: &mut Dice) -> Vec<Update>;
+}
+
+// TODO: Removing entities!
 pub trait EntityStore<T: Entity + Clone> {
     fn get(&self, id: &Identifier) -> Result<T, TCError>;
     fn insert(&self, item: T);
@@ -70,22 +70,18 @@ impl<T: Tickable> HashStore<T> {
     }
 }
 
-impl<F: Fightable> HashStore<F> {
-    pub fn fight(&self, world: &World, dice: &mut Dice) -> Vec<Update> {
-        let mut items = self.items.write().unwrap();
-        let attacks: Vec<Attack> = items
+impl<F: Melee> HashStore<F> {
+    pub fn melee(&self, world: &World, dice: &mut Dice) -> Vec<Update> {
+        self.items
+            .write()
+            .unwrap()
             .values_mut()
-            .flat_map(|i| i.fight(world, dice))
-            .collect();
-
-        attacks
-            .into_iter()
-            .flat_map(|a| items.get_mut(&a.to).map(|i| i.harm(a)).unwrap_or_default())
+            .flat_map(|space| space.melee(world, dice))
             .collect()
     }
 }
 
-impl<T: Entity + Clone> EntityStore<T> for HashStore<T> {
+impl<T: Entity + Clone + std::fmt::Debug> EntityStore<T> for HashStore<T> {
     fn get(&self, id: &Identifier) -> Result<T, TCError> {
         self.items
             .read()
@@ -96,6 +92,8 @@ impl<T: Entity + Clone> EntityStore<T> for HashStore<T> {
     }
 
     fn insert(&self, item: T) {
+        trace!("HashStore - Inserting {:?}", item);
+
         self.items
             .write()
             .unwrap()

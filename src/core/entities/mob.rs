@@ -114,41 +114,30 @@ impl Mob {
     pub fn max_health(&self) -> usize {
         self.constitution
     }
-}
 
-impl Fightable for Mob {
-    fn is_alive(&self) -> bool {
+    pub fn is_alive(&self) -> bool {
         self.health > 0
     }
 
-    fn fight(&self, world: &World, _dice: &mut Dice) -> Option<Attack> {
-        // dead characters can't fight!
-        if self.is_dead() {
-            return None;
-        }
+    pub fn is_dead(&self) -> bool {
+        !self.is_alive()
+    }
 
+    pub fn fight(&self, mobs: &[Mob], _dice: &mut Dice) -> Option<Attack> {
         // no enemies? no worries
         if self.enemies.is_empty() {
+            trace!("{} won't fight - no enemies!", self.name());
             return None;
         }
 
-        // busy characters can't fight either!
-        if self.is_busy() {
-            return None;
-        }
-
-        // get the characters in the current space.
-        let this_mob = world.mobs.get(&self.entity_id).ok()?;
-        let space = world.spaces.get(&this_mob.space_id).ok()?;
-
-        // see if any of them are enemies.
-        let enemies: Vec<Identifier> = space
-            .population
-            .mobs
+        // see if any of the mobs are enemies.
+        let enemies: Vec<&Identifier> = mobs
             .iter()
-            .filter(|c| self.enemies.contains(c))
-            .cloned()
+            .filter(|m| self.enemies.contains(m.entity_id()))
+            .map(|m| m.entity_id())
             .collect();
+
+        trace!("{} has enemies here! {:?}", self.name(), enemies);
 
         // target the first enemy, if there are any
         let target_id = match enemies.first() {
@@ -158,13 +147,15 @@ impl Fightable for Mob {
             }
         };
 
+        trace!("{:?} attacking {:?} !!", self.name, target_id);
+
         // TODO: determine different kinds of attacks
         let attack = Attack::new(&self.entity_id, target_id, Damage::Blunt(1));
 
         Some(attack)
     }
 
-    fn harm(&mut self, attack: Attack) -> Vec<Update> {
+    pub fn harm(&mut self, attack: Attack) -> Vec<Update> {
         let mut output = vec![];
 
         // TODO: ensure the attack is directed at this particular character
@@ -190,7 +181,7 @@ impl Fightable for Mob {
         output
     }
 
-    fn restore(&mut self, restore: Restore) -> Vec<Update> {
+    pub fn restore(&mut self, restore: Restore) -> Vec<Update> {
         let mut output = vec![];
 
         // TODO: handle different kinds of healing
@@ -246,6 +237,12 @@ impl Named for Mob {
     }
 }
 
+impl Located for Mob {
+    fn location(&self) -> &Identifier {
+        &self.space_id
+    }
+}
+
 #[derive(Default, Clone, Debug)]
 pub struct Description {
     pub text: String,
@@ -265,7 +262,7 @@ impl Default for Doing {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Attack {
     pub from: Identifier,
     pub to: Identifier,
@@ -282,7 +279,7 @@ impl Attack {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Damage {
     Blunt(usize),
     Edged(usize),

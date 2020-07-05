@@ -48,16 +48,8 @@ impl Tickable for Space {
             }
         }
 
-        // TODO: Yeah, this can be cleaned up a lot.
-        let local_mobs = self.population.identifiers();
-        let local_mob_prototypes: Vec<String> = local_mobs
-            .iter()
-            .flat_map(|i| world.mobs.get(i))
-            .map(|m| m.prototype)
-            .collect();
-
         let mut mob_counter: HashMap<String, usize> = HashMap::new();
-        for p in local_mob_prototypes {
+        for p in self.population.prototypes(&world) {
             let count = mob_counter.entry(p).or_insert(0);
             *count += 1;
         }
@@ -66,7 +58,8 @@ impl Tickable for Space {
             if s.should_spawn(dice) {
                 // do we already have the maximum population of this mob?
                 if mob_counter.get(&s.name).unwrap_or(&0) < &s.max {
-                    if let Some(mob) = world.mob_prototypes.create(&s.name) {
+                    if let Some(mut mob) = world.mob_prototypes.create(&s.name) {
+                        mob.space_id = self.entity_id().clone();
                         self.population.add(mob.entity_id());
                         world.mobs.insert(mob);
                     }
@@ -92,6 +85,45 @@ impl Describe for Space {
             text,
             clicks: self.description.clicks.clone(),
         }
+    }
+}
+
+impl Melee for Space {
+    fn population(&self) -> &[Identifier] {
+        self.population.identifiers()
+    }
+
+    fn melee(&mut self, world: &World, dice: &mut Dice) -> Vec<Update> {
+        // filter out mobs that are dead or busy
+        let mobs: Vec<Mob> = self
+            .population()
+            .iter()
+            .flat_map(|id| world.mobs.get(id))
+            .filter(|m| m.is_alive() && !m.is_busy())
+            .collect();
+
+        // get the list of attacks from the mobs
+        let attacks: Vec<Attack> = mobs.iter().flat_map(|m| m.fight(&mobs, dice)).collect();
+
+        let mut updates = vec![];
+
+        // apply the attacks to the mobs
+        for attack in attacks {
+            if let Ok(mut target) = world.mobs.get(&attack.to) {
+                trace!("Applying attack ... {:?}!", attack);
+                updates.append(&mut target.harm(attack));
+
+                // remove the dead from the population
+                if target.is_dead() {
+                    self.population.remove(target.entity_id());
+                }
+
+                // update the target mob
+                world.mobs.insert(target);
+            }
+        }
+
+        updates
     }
 }
 
