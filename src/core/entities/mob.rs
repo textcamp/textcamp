@@ -114,8 +114,14 @@ impl Mob {
     pub fn max_health(&self) -> usize {
         self.constitution
     }
+}
 
-    pub fn fight(&self, world: &World) -> Option<Attack> {
+impl Fightable for Mob {
+    fn is_alive(&self) -> bool {
+        self.health > 0
+    }
+
+    fn fight(&self, world: &World, _dice: &mut Dice) -> Option<Attack> {
         // dead characters can't fight!
         if self.is_dead() {
             return None;
@@ -158,7 +164,7 @@ impl Mob {
         Some(attack)
     }
 
-    pub fn harm(&mut self, attack: Attack) -> Vec<Update> {
+    fn harm(&mut self, attack: Attack) -> Vec<Update> {
         let mut output = vec![];
 
         // TODO: ensure the attack is directed at this particular character
@@ -184,7 +190,7 @@ impl Mob {
         output
     }
 
-    pub fn restore(&mut self, restore: Restore) -> Vec<Update> {
+    fn restore(&mut self, restore: Restore) -> Vec<Update> {
         let mut output = vec![];
 
         // TODO: handle different kinds of healing
@@ -204,10 +210,6 @@ impl Mob {
         output.push(attacker_update);
 
         output
-    }
-
-    pub fn is_dead(&self) -> bool {
-        self.health == 0
     }
 }
 

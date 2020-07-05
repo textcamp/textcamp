@@ -32,10 +32,7 @@ impl Inventory {
     }
 
     pub fn count(&self, name: &str) -> usize {
-        self.items()
-            .iter()
-            .filter(|i| i.prototype == name)
-            .count()
+        self.items().iter().filter(|i| i.prototype == name).count()
     }
 
     pub fn add(&mut self, item: Item) {

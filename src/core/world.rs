@@ -55,21 +55,8 @@ impl World {
 
         self.clock.tick();
 
-        let mut new_spaces = HashStore::new();
-        for space in self.spaces.all() {
-            let mut new_space = space.clone();
-            output.append(&mut new_space.tick(&self, &mut dice));
-            new_spaces.insert(new_space);
-        }
-        self.spaces = new_spaces;
-
-        let mut new_mobs = HashStore::new();
-        for mob in self.mobs.all() {
-            let mut new_mob = mob.clone();
-            output.append(&mut new_mob.tick(&self, &mut dice));
-            new_mobs.insert(new_mob);
-        }
-        self.mobs = new_mobs;
+        output.append(&mut self.spaces.tick(&self, &mut dice));
+        output.append(&mut self.mobs.tick(&self, &mut dice));
 
         output
     }
@@ -113,32 +100,11 @@ impl World {
         updates
     }
 
-    pub fn melee(&mut self) -> Vec<Update> {
-        // get the attacks
-        let attacks: Vec<Attack> = self
-            .mobs
-            .all()
-            .iter()
-            .flat_map(|c| c.fight(&self))
-            .collect();
-
-        // apply the attacks
-        attacks
-            .into_iter()
-            .flat_map(|a| {
-                if let Ok(original) = self.mobs.get(&a.to) {
-                    let mut fighting_mob = original.clone();
-                    let updates = fighting_mob.harm(a);
-                    self.mobs.insert(fighting_mob);
-                    updates
-                } else {
-                    vec![]
-                }
-            })
-            .collect()
+    pub fn melee(&self) -> Vec<Update> {
+        self.mobs.fight(&self, &mut Dice::new())
     }
 
-    pub fn mob_space(&self, mob_id: &Identifier) -> Result<(&Mob, &Space), TCError> {
+    pub fn mob_space(&self, mob_id: &Identifier) -> Result<(Mob, Space), TCError> {
         let mob = self.mobs.get(mob_id)?;
         let space = self.spaces.get(&mob.space_id)?;
 

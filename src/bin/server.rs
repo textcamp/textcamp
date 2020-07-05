@@ -26,7 +26,7 @@ async fn ws_index(
     let character_id = character.entity_id().clone();
     character.space_id = Identifier::origin();
 
-    world.write().map(|mut w| w.mobs.insert(character)).unwrap();
+    world.read().map(|w| w.mobs.insert(character)).unwrap();
 
     ws::start(Connection::new(world, character_id), &req, stream)
 }
