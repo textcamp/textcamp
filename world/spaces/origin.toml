@@ -13,7 +13,12 @@ shed = "go in"
 [exits]
 in = "SHED"
 
-[[spawn]]
-item = "ROCK"
+[[items]]
+name = "ROCK"
 chance = 10
 max = 3
+
+[[mobs]]
+name = "MOSQUITO"
+chance = 3
+max = 2

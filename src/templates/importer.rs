@@ -10,6 +10,7 @@ pub enum Kind {
     Item,
 }
 
+// TODO: Rename Importer to Template
 #[derive(Debug, Deserialize)]
 pub struct Importer {
     pub item: Option<Meta>,
@@ -18,7 +19,8 @@ pub struct Importer {
     pub description: Description,
     pub actions: Option<HashMap<String, String>>,
     pub exits: Option<HashMap<String, String>>,
-    pub spawn: Option<Vec<crate::core::Spawn>>,
+    pub items: Option<Vec<crate::core::Spawn>>,
+    pub mobs: Option<Vec<crate::core::Spawn>>,
     pub attributes: Option<Attributes>,
 }
 

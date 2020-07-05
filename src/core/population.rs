@@ -21,4 +21,8 @@ impl Population {
             .cloned()
             .collect();
     }
+
+    pub fn identifiers(&self) -> &[Identifier] {
+        &self.mobs
+    }
 }

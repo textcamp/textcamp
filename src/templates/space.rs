@@ -33,7 +33,8 @@ impl From<Importer> for Injector {
             injector.space.exits.insert(direction, exit_id);
         }
 
-        injector.space.spawn = template.spawn.unwrap_or_default();
+        injector.space.item_spawn = template.items.unwrap_or_default();
+        injector.space.mob_spawn = template.mobs.unwrap_or_default();
         injector.space.description.text = template.description.day.clone();
 
         for (label, action) in template.actions.unwrap() {
