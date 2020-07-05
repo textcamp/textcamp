@@ -139,8 +139,8 @@ impl World {
         let direction = Direction::from(direction_src)
             .ok_or_else(|| TCError::user("You can't go that way."))?;
 
-        let mut mob = self.mobs.get(mob_id)?.clone();
-        let mut current_space = self.spaces.get(&mob.space_id)?.clone();
+        let mut mob = self.mobs.get(mob_id)?;
+        let mut current_space = self.spaces.get(&mob.space_id)?;
 
         // get the new space ID based on the direction
         let new_space_id = current_space
@@ -149,7 +149,7 @@ impl World {
             .ok_or_else(|| TCError::user("You can't go that way."))?
             .clone();
 
-        let mut new_space = self.spaces.get(&new_space_id)?.clone();
+        let mut new_space = self.spaces.get(&new_space_id)?;
 
         // remove them from the old space, add them to the new space
         current_space.population.remove(mob_id);
@@ -215,8 +215,8 @@ impl World {
 
         let item_name = arg.ok_or_else(|| TCError::user("Take what?"))?;
 
-        let mut mob = self.mobs.get(mob_id)?.clone();
-        let mut space = self.spaces.get(&mob.space_id)?.clone();
+        let mut mob = self.mobs.get(mob_id)?;
+        let mut space = self.spaces.get(&mob.space_id)?;
 
         if let Some(item) = space.inventory.remove(item_name) {
             mob.inventory.add(item);
@@ -247,8 +247,8 @@ impl World {
 
         let item_name = arg.ok_or_else(|| TCError::user("Take what?"))?;
 
-        let mut mob = self.mobs.get(mob_id)?.clone();
-        let mut space = self.spaces.get(&mob.space_id)?.clone();
+        let mut mob = self.mobs.get(mob_id)?;
+        let mut space = self.spaces.get(&mob.space_id)?;
 
         if let Some(item) = mob.inventory.remove(item_name) {
             space.inventory.add(item);
@@ -290,7 +290,7 @@ impl World {
         for local_mob in &space.population.mobs {
             let target_mob = self.mobs.get(&local_mob)?;
             if target_mob.name() == name {
-                let mut player = mob.clone();
+                let mut player = mob;
                 player.add_enemy(local_mob);
                 self.mobs.insert(player);
                 let output = vec![Update::combat(mob_id, &format!("You attack {}!", name))];
