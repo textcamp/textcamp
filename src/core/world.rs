@@ -151,6 +151,7 @@ impl World {
         output.push(Update::space(mob_id, space.describe(&self)));
         output.push(Update::time(mob_id, &self.clock.into()));
         output.push(Update::inventory(mob_id, &mob.inventory));
+        output.push(Update::health(mob_id, mob.health()));
 
         Ok(output)
     }
@@ -314,17 +315,35 @@ impl World {
         mob_id: &Identifier,
         arg: Option<&String>,
     ) -> Result<Vec<Update>, TCError> {
-        let name = arg.ok_or_else(|| TCError::user("Fight who?"))?;
+        let target_name = arg.ok_or_else(|| TCError::user("Fight who?"))?;
 
         let (mob, space) = self.mob_space(mob_id)?;
 
         for local_mob in &space.population.mobs {
-            let target_mob = self.mobs.get(&local_mob)?;
-            if target_mob.name() == name {
+            let mut target_mob = self.mobs.get(&local_mob)?;
+            // add the enemy if the name matches and it isn't yourself!
+            if target_mob.name() == target_name && target_mob.entity_id() != mob.entity_id() {
                 let mut player = mob;
-                player.add_enemy(local_mob);
+
+                // both mobs become enemies!
+                player.add_enemy(target_mob.entity_id());
+                target_mob.add_enemy(player.entity_id());
+
+                let mut output = vec![];
+
+                output.push(Update::combat(
+                    player.entity_id(),
+                    format!("You attack {}!", target_name),
+                ));
+
+                output.push(Update::combat(
+                    target_mob.entity_id(),
+                    format!("{} attacks you!", player.name()),
+                ));
+
                 self.mobs.insert(player);
-                let output = vec![Update::combat(mob_id, &format!("You attack {}!", name))];
+                self.mobs.insert(target_mob);
+
                 return Ok(output);
             }
         }

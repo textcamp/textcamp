@@ -26,6 +26,20 @@ impl Space {
             mob_spawn: vec![],
         }
     }
+
+    pub fn population_update(&self, world: &World) -> Vec<Update> {
+        self.population()
+            .iter()
+            .map(|id| Update::population(id, self.population.names(world)))
+            .collect()
+    }
+
+    pub fn space_update(&self, world: &World) -> Vec<Update> {
+        self.population()
+            .iter()
+            .map(|id| Update::space(id, self.describe(world)))
+            .collect()
+    }
 }
 
 impl Entity for Space {
@@ -67,7 +81,12 @@ impl Tickable for Space {
             }
         }
 
-        vec![]
+        let mut output = vec![];
+
+        output.append(&mut self.population_update(world));
+        output.append(&mut self.space_update(world));
+
+        output
     }
 }
 
@@ -94,6 +113,8 @@ impl Melee for Space {
     }
 
     fn melee(&mut self, world: &World, dice: &mut Dice) -> Vec<Update> {
+        let population_count = self.population().len();
+
         // filter out mobs that are dead or busy
         let mobs: Vec<Mob> = self
             .population()
@@ -112,15 +133,21 @@ impl Melee for Space {
             if let Ok(mut target) = world.mobs.get(&attack.to) {
                 trace!("Applying attack ... {:?}!", attack);
                 updates.append(&mut target.harm(attack));
+                updates.push(Update::health(target.entity_id(), target.health()));
 
-                // remove the dead from the population
+                // remove the dead from the population and the world
                 if target.is_dead() {
                     self.population.remove(target.entity_id());
+                    world.mobs.remove(target.entity_id());
+                } else {
+                    // mob is still alive, so update the target mob
+                    world.mobs.insert(target);
                 }
-
-                // update the target mob
-                world.mobs.insert(target);
             }
+        }
+
+        if population_count != self.population().len() {
+            updates.append(&mut self.population_update(world));
         }
 
         updates

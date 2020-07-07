@@ -8,7 +8,7 @@ day = "A hungry mosquito!"
 [attributes]
 strength = 1
 dexterity = 5
-constitution = 1
+constitution = 2
 intelligence = 1
 wisdom = 1
 charisma = 1

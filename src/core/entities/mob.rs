@@ -19,7 +19,7 @@ pub struct Mob {
     pub description: Description,
 
     /// The current health of the character (eg: hit points, health points)
-    pub health: usize,
+    pub hp: usize,
 
     /// The current location of the character (See )
     pub space_id: Identifier,
@@ -71,7 +71,7 @@ impl Mob {
             intelligence: 0,
             wisdom: 0,
             charisma: 0,
-            health: 0,
+            hp: 0,
 
             enemies: vec![],
             delay: Instant::now(),
@@ -115,8 +115,12 @@ impl Mob {
         self.constitution
     }
 
+    pub fn health(&self) -> usize {
+        (self.hp * 100) / self.constitution
+    }
+
     pub fn is_alive(&self) -> bool {
-        self.health > 0
+        self.hp > 0
     }
 
     pub fn is_dead(&self) -> bool {
@@ -133,7 +137,7 @@ impl Mob {
         // see if any of the mobs are enemies.
         let enemies: Vec<&Identifier> = mobs
             .iter()
-            .filter(|m| self.enemies.contains(m.entity_id()))
+            .filter(|m| self.enemies.contains(m.entity_id())) // are they in your enemy list?
             .map(|m| m.entity_id())
             .collect();
 
@@ -158,21 +162,25 @@ impl Mob {
     pub fn harm(&mut self, attack: Attack) -> Vec<Update> {
         let mut output = vec![];
 
-        // TODO: ensure the attack is directed at this particular character
+        // ensure the attack is directed at this particular character
+        if attack.to != self.entity_id {
+            return output;
+        }
+
         // TODO: handle different kinds of damage
-        if attack.damage.health() >= self.health {
-            self.health = 0;
+        if attack.damage.health() >= self.hp {
+            self.hp = 0;
         } else {
-            self.health -= attack.damage.health();
+            self.hp -= attack.damage.health();
         }
 
         // TODO: handle death and subsequent activites (looting? xp? oh my!)
-        let target_update = Update::combat(&attack.to, "You've been hurt!");
+        let target_update = Update::combat(&attack.to, "You've been hurt!".to_owned());
 
         let attacker_update = if self.is_dead() {
-            Update::combat(&attack.from, &format!("You killed {:?}!", self.name()))
+            Update::combat(&attack.from, format!("You killed {:?}!", self.name()))
         } else {
-            Update::combat(&attack.from, &format!("You hit {:?}!", self.name()))
+            Update::combat(&attack.from, format!("You hit {:?}!", self.name()))
         };
 
         output.push(target_update);
@@ -185,17 +193,17 @@ impl Mob {
         let mut output = vec![];
 
         // TODO: handle different kinds of healing
-        let new_hp = self.health + restore.heal.health();
+        let new_hp = self.hp + restore.heal.health();
         if new_hp >= self.max_health() {
-            self.health = self.max_health();
+            self.hp = self.max_health();
         } else {
-            self.health = new_hp;
+            self.hp = new_hp;
         }
 
-        let target_update = Update::combat(&restore.to, "You've been healed!");
+        let target_update = Update::combat(&restore.to, "You've been healed!".to_owned());
 
         let attacker_update =
-            Update::combat(&restore.from, &format!("You healed {:?}!", self.name()));
+            Update::combat(&restore.from, format!("You healed {:?}!", self.name()));
 
         output.push(target_update);
         output.push(attacker_update);
@@ -218,7 +226,14 @@ impl Entity for Mob {
 
 impl Tickable for Mob {
     fn tick(&mut self, _world: &World, _dice: &mut Dice) -> Vec<Update> {
-        vec![]
+        let mut output = vec![];
+
+        if self.hp < self.constitution {
+            self.hp += 1;
+            output.push(Update::health(&self.entity_id, self.health()));
+        }
+
+        output
     }
 }
 

@@ -42,8 +42,8 @@ impl Update {
         Update::new(to, wrapper)
     }
 
-    pub fn combat(to: &Identifier, message: &str) -> Self {
-        let wrapper = Wrapper::Combat(message.to_owned());
+    pub fn combat(to: &Identifier, message: String) -> Self {
+        let wrapper = Wrapper::Combat(message);
         Update::new(to, wrapper)
     }
 
@@ -76,6 +76,11 @@ impl Update {
         let wrapper = Wrapper::Inventory(items);
         Update::new(to, wrapper)
     }
+
+    pub fn health(to: &Identifier, pct: usize) -> Self {
+        let wrapper = Wrapper::Health(pct);
+        Update::new(to, wrapper)
+    }
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -92,4 +97,5 @@ pub enum Wrapper {
     Population(Vec<String>),
     Time(DateTime),
     Inventory(Vec<String>),
+    Health(usize),
 }

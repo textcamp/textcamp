@@ -8,7 +8,7 @@ pub struct MobPrototype {
     pub name: String,
     pub space_id: Identifier,
     pub description: Description,
-    pub health: usize,
+    pub hp: usize,
     pub strength: usize,
     pub constitution: usize,
     pub dexterity: usize,
@@ -27,7 +27,7 @@ impl Prototyped for MobPrototype {
         output.name = self.name.clone();
         output.space_id = self.space_id.clone();
         output.description = self.description.clone();
-        output.health = self.health;
+        output.hp = self.hp;
         output.strength = self.strength;
         output.constitution = self.constitution;
         output.dexterity = self.dexterity;

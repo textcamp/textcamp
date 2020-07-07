@@ -39,6 +39,7 @@ pub trait Melee {
 pub trait EntityStore<T: Entity + Clone> {
     fn get(&self, id: &Identifier) -> Result<T, TCError>;
     fn insert(&self, item: T);
+    fn remove(&self, id: &Identifier);
 }
 
 #[derive(Default, Debug)]
@@ -98,5 +99,10 @@ impl<T: Entity + Clone + std::fmt::Debug> EntityStore<T> for HashStore<T> {
             .write()
             .unwrap()
             .insert(item.entity_id().to_owned(), item);
+    }
+
+    fn remove(&self, id: &Identifier) {
+        trace!("HashStore - Deleting {:?}", id);
+        self.items.write().unwrap().remove(id);
     }
 }

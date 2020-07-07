@@ -53,6 +53,11 @@ let route = (json) => {
         showPopulation(json.population);
         return;
     }
+
+    if (json.health) {
+        showHealth(json.health);
+        return;
+    }
 }
 
 
@@ -90,6 +95,7 @@ let enterKey = (e) => {
     if (event.key === 'Enter') {
         socket.send(e.value);
         e.value = "";
+        record('error', '');
     }
 }
 
@@ -161,8 +167,13 @@ let showTime = (time) => {
     record('time', output);
 }
 
+let showHealth = (health) => {
+    record('health', `${health}%`);
+}
+
 let doAction = (action) => {
     socket.send(action);
+    record('error', '');
 }
 
 let asAction = (label, action) => {
