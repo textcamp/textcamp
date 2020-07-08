@@ -37,11 +37,6 @@ impl Update {
         Update::new(to, wrapper)
     }
 
-    pub fn extra(to: &Identifier, message: &str) -> Self {
-        let wrapper = Wrapper::Extra(message.to_owned());
-        Update::new(to, wrapper)
-    }
-
     pub fn combat(to: &Identifier, message: String) -> Self {
         let wrapper = Wrapper::Combat(message);
         Update::new(to, wrapper)
