@@ -1,8 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code&display=swap');
 
 * {
-    padding: 0;
-    margin: 0;
     font-size: large;
     font-family: 'Fira Code', monospace;
     text-shadow: 3px 3px 3px #ccc;
@@ -12,27 +10,51 @@ body {
     margin: 10px;
 }
 
-body>div {
-    margin-bottom: 20px;
+.grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1em auto 2em;
+    grid-template-areas:
+        "time time time health"
+        "spc  spc  spc  population"
+        "input input input population";
+    gap: 20px;
+}
+
+.time {
+    grid-area: time;
+}
+
+.health {
+    grid-area: health;
+}
+
+.space {
+    border: 1px solid #888;
+    padding: 1em;
+    grid-area: spc;
+}
+
+.population {
+    grid-area: population;
+}
+
+.population ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.input {
+    grid-area: input;
+}
+
+.input>input {
+    width: 100%;
 }
 
 .content {
     white-space: pre-wrap;
-}
-
-#input>input {
-    border: 0;
-    outline-width: 0;
-    background: none;
-}
-
-#input {
-    border: 1px solid #888;
-    padding: 5px;
-}
-
-#main-text, #input {
-    margin: 10px 5px;
 }
 
 .action {

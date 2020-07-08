@@ -48,7 +48,7 @@ impl Update {
     }
 
     pub fn character(to: &Identifier, content: Markup) -> Self {
-        let wrapper = Wrapper::Space(content);
+        let wrapper = Wrapper::Character(content);
         Update::new(to, wrapper)
     }
 

@@ -14,18 +14,13 @@ let route = (json) => {
         return;
     }
 
-    if (json.attributes) {
-        showAttributes(json.attributes);
-        return;
-    }
-
     if (json.error) {
         record('error', json.error);
         return;
     }
 
     if (json.combat) {
-        record('combat', json.combat);
+        showCombat(json.combat);
         return;
     }
 
@@ -40,12 +35,14 @@ let route = (json) => {
     }
 
     if (json.item) {
-        record('info', json.item.text);
+        // take over the main description
+        showSpace(json.item);
         return;
     }
 
     if (json.character) {
-        showCharacter(json.character);
+        // take over the main description
+        showSpace(json.character);
         return;
     }
 
@@ -99,25 +96,20 @@ let enterKey = (e) => {
     }
 }
 
-let fadeInfo = () => {
-    let elementId = `info-content`;
-    let element = document.getElementById(elementId);
-    element.style.opacity = "0";
-}
-
 let showInfo = (info) => {
     let elementId = `info-content`;
     let element = document.getElementById(elementId);
-    element.innerHTML = info;
+    element.innerHTML = element.innerHTML + info + "\n";
     element.style.opacity = "1";
 
-    setTimeout(fadeInfo, 3000);
 }
 
-let showAttributes = (attributes) => {
-    let attrs = `in: ${attributes.intelligence} ws: ${attributes.wisdom} con: ${attributes.constitution} dx: ${attributes.dexterity} ch: ${attributes.charisma} st: ${attributes.strength}`;
+let showCombat = (combat) => {
+    let elementId = `combat-content`;
+    let element = document.getElementById(elementId);
+    element.innerHTML = element.innerHTML + combat + "\n";
+    element.style.opacity = "1";
 
-    record('attributes', attrs);
 }
 
 let showSpace = (space) => {
@@ -142,10 +134,6 @@ let showExits = (exits) => {
     record('exits', output);
 }
 
-let showCharacter = (character) => {
-    record('info', character.long_description);
-}
-
 let showInventory = (inventory) => {
     let output = "<ul>";
     inventory.forEach(i => { output += `<li>${i}</li>` });
@@ -168,7 +156,9 @@ let showTime = (time) => {
 }
 
 let showHealth = (health) => {
-    record('health', `${health}%`);
+    let red_hearts = Math.round(health / 20);
+    let black_hearts = 5 - red_hearts;
+    record('health', `${"❤️".repeat(red_hearts)}${"🖤".repeat(black_hearts)}`);
 }
 
 let doAction = (action) => {

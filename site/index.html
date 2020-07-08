@@ -10,24 +10,14 @@
 </head>
 
 <body>
-    <div id="time">
-        <h3>Time</h3>
-        <div id="time-content" class="content"></div>
-    </div>
-
-    <div id="attributes">
-        <h3>Attributes</h3>
-        <div id="attributes-content" class="content"></div>
-    </div>
-
-    <div id="health">
-        <h3>Health</h3>
-        <div id="health-content" class="content"></div>
-    </div>
-
-    <div id="space">
-        <h3>Space</h3>
-        <div id="space-content" class="content"></div>
+    <div class="grid-container">
+        <div id="time-content" class="time content"></div>
+        <div id="health-content" class="health content"></div>
+        <div id="space-content" class="space content"></div>
+        <div id="population-content" class="population content"></div>
+        <div id="input" class="input">
+            <input type="text" onkeydown="enterKey(this)" autofocus></input>
+        </div>
     </div>
 
     <div id="exits">
@@ -35,19 +25,9 @@
         <div id="exits-content" class="content"></div>
     </div>
 
-    <div id="character">
-        <h3>Character</h3>
-        <div id="character-content" class="content"></div>
-    </div>
-
     <div id="inventory">
         <h3>Inventory</h3>
         <div id="inventory-content" class="content"></div>
-    </div>
-
-    <div id="population">
-        <h3>Population</h3>
-        <div id="population-content" class="content"></div>
     </div>
 
     <div id="combat">
@@ -65,17 +45,15 @@
         <div id="error-content" class="content"></div>
     </div>
 
-    <div id="input">
-        <input type="text" onkeydown="enterKey(this)" autofocus></input>
-    </div>
-
     <div id="guide">
         <h3>Commands</h3>
         <ul>
+            <li><code>look [thing/name]</code> look at something</li>
             <li><code>go [direction]</code> to move</li>
             <li><code>take [thing]</code> to pick something up</li>
             <li><code>drop [thing]</code> to put something down</li>
             <li><code>fight [name]</code> to fight!</li>
+            <li><code>refresh</code> repopulates the screen</li>
         </ul>
     </div>
 
