@@ -108,17 +108,13 @@ impl Describe for Space {
             let mut item_slugs = vec![];
 
             for (name, count) in item_counts.into_iter() {
-                if count == 1 {
-                    item_slugs.push(format!("a [[{}]]", name));
-                }
+                let slug = match count {
+                    1 => format!("a [[{}]]", name),
+                    2 => format!("a couple of [[{}]]s", name),
+                    _ => format!("several [[{}]]s", name),
+                };
 
-                if count == 2 {
-                    item_slugs.push(format!("a couple of [[{}]]s", name));
-                }
-
-                if count > 2 {
-                    item_slugs.push(format!("several [[{}]]s", name));
-                }
+                item_slugs.push(slug);
 
                 // make the items clickable
                 clicks.insert(name.clone(), format!("take {}", name));
