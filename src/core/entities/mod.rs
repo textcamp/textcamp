@@ -13,7 +13,6 @@ pub trait Entity {
     fn entity_id(&self) -> &Identifier;
 }
 
-// TODO: Expiration to clean up dead / inactive entities?
 pub trait Tickable {
     fn tick(&mut self, world: &World, dice: &mut Dice) -> Vec<Update>;
 }
@@ -35,7 +34,6 @@ pub trait Melee {
     fn melee(&mut self, world: &World, dice: &mut Dice) -> Vec<Update>;
 }
 
-// TODO: Removing entities!
 pub trait EntityStore<T: Entity + Clone> {
     fn get(&self, id: &Identifier) -> Result<T, TCError>;
     fn insert(&self, item: T);
