@@ -93,17 +93,41 @@ impl Tickable for Space {
 impl Describe for Space {
     fn describe(&self, _world: &World) -> Markup {
         let mut text = self.description.text.clone();
+        let mut clicks = self.description.clicks.clone();
 
         if !self.inventory.is_empty() {
-            let items: Vec<&str> = self.inventory.items().iter().map(|i| i.name()).collect();
+            // build up a count for each item in the space
+            let mut item_counts: HashMap<String, usize> = HashMap::new();
 
-            text += &format!("\n\nYou see {} here.", items.join(", "));
+            self.inventory.items().iter().for_each(|i| {
+                let count = item_counts.entry(i.name().to_owned()).or_insert(0);
+                *count += 1;
+            });
+
+            // use the count to create descriptive slugs for each kind of item
+            let mut item_slugs = vec![];
+
+            for (name, count) in item_counts.into_iter() {
+                if count == 1 {
+                    item_slugs.push(format!("a [[{}]]", name));
+                }
+
+                if count == 2 {
+                    item_slugs.push(format!("a couple of [[{}]]s", name));
+                }
+
+                if count > 2 {
+                    item_slugs.push(format!("several [[{}]]s", name));
+                }
+
+                // make the items clickable
+                clicks.insert(name.clone(), format!("take {}", name));
+            }
+
+            text += &format!("\n\nYou see {} here.", item_slugs.join(", "));
         }
 
-        Markup {
-            text,
-            clicks: self.description.clicks.clone(),
-        }
+        Markup { text, clicks }
     }
 }
 
