@@ -1,6 +1,6 @@
 use super::Prototyped;
 use crate::core::entities::mob::{Description, Mob};
-use crate::core::Identifier;
+use crate::core::*;
 
 #[derive(Debug, Default)]
 pub struct MobPrototype {
@@ -17,14 +17,20 @@ pub struct MobPrototype {
     pub charisma: usize,
 }
 
+impl MobPrototype {
+    fn unique_name(&self) -> String {
+        format!("{}{}", &self.name, rand::thread_rng().gen::<u8>())
+    }
+}
+
 impl Prototyped for MobPrototype {
     type Item = Mob;
 
     fn create(&self) -> Self::Item {
         let mut output = Mob::new();
 
-        output.prototype = self.prototype_name.clone();
-        output.name = self.name.clone();
+        output.prototype = self.prototype_name();
+        output.name = self.unique_name();
         output.space_id = self.space_id.clone();
         output.description = self.description.clone();
         output.hp = self.hp;
@@ -38,7 +44,7 @@ impl Prototyped for MobPrototype {
         output
     }
 
-    fn name(&self) -> &str {
-        &self.prototype_name
+    fn prototype_name(&self) -> String {
+        self.prototype_name.to_owned()
     }
 }

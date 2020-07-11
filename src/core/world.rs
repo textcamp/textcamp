@@ -130,6 +130,7 @@ impl World {
             .expect("Could not load ORIGIN space!!");
 
         hero.space_id = origin.entity_id().clone();
+        hero.name = format!("Hero{}", rand::thread_rng().gen::<u8>());
         let hero_identifier = hero.entity_id().clone();
 
         self.mobs.insert(hero);

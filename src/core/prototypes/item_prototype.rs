@@ -20,8 +20,8 @@ impl Prototyped for ItemPrototype {
         output
     }
 
-    fn name(&self) -> &str {
-        &self.prototype_name
+    fn prototype_name(&self) -> String {
+        self.prototype_name.to_owned()
     }
 }
 

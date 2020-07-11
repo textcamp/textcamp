@@ -15,7 +15,7 @@ pub struct Prototypes<T: Prototyped> {
 
 impl<T: Prototyped> Prototypes<T> {
     pub fn add(&mut self, p: T) {
-        self.things.insert(p.name().to_owned(), p);
+        self.things.insert(p.prototype_name(), p);
     }
 
     pub fn create(&self, key: &str) -> Option<T::Item> {
@@ -36,5 +36,5 @@ impl<T: Prototyped> Prototypes<T> {
 pub trait Prototyped {
     type Item;
     fn create(&self) -> Self::Item;
-    fn name(&self) -> &str;
+    fn prototype_name(&self) -> String;
 }
