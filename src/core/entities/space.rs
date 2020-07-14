@@ -157,6 +157,10 @@ impl Melee for Space {
 
                 // remove the dead from the population and the world
                 if target.is_dead() {
+                    updates.push(Update::combat(
+                        target.entity_id(),
+                        "You have been killed!".to_owned(),
+                    ));
                     self.population.remove(target.entity_id());
                     world.mobs.remove(target.entity_id());
                 } else {
