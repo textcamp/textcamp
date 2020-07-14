@@ -128,11 +128,11 @@ impl Mob {
         !self.is_alive()
     }
 
-    pub fn fight(&self, mobs: &[Mob], _dice: &mut Dice) -> Option<Attack> {
+    pub fn fight(&self, mobs: &[Mob], _dice: &mut Dice) -> Vec<Action> {
         // no enemies? no worries
         if self.enemies.is_empty() {
             trace!("{} won't fight - no enemies!", self.name());
-            return None;
+            return vec![];
         }
 
         // see if any of the mobs are enemies.
@@ -148,77 +148,58 @@ impl Mob {
         let target = match enemies.first() {
             Some(mob) => mob,
             None => {
-                return None;
+                return vec![];
             }
         };
-
-        trace!("{} attacks {} !!", self.name, target.name);
 
         // TODO: determine different kinds of attacks
-        let attack = Attack::new(&self.entity_id, target.entity_id(), Damage::Blunt(1));
+        // TODO: multiple attacks
+        // TODO: healing actions
+        let attack = Action::new(
+            &self.entity_id,
+            &target.entity_id,
+            Effect::Harm(Damage::Blunt(1)),
+        );
 
-        Some(attack)
+        vec![attack]
     }
 
-    pub fn harm(&mut self, attack: Attack, world: &World) -> Vec<Update> {
-        let mut output = vec![];
-
-        // ensure the attack is directed at this particular character
-        if attack.to != self.entity_id {
-            return output;
+    pub fn act(&mut self, action: Action, world: &World) -> Vec<Update> {
+        if action.to != self.entity_id {
+            return vec![];
         }
 
-        let attacking_mob = match world.mobs.get(&attack.from) {
+        let from_mob = match world.mobs.get(&action.from) {
             Ok(m) => m,
             Err(e) => {
-                warn!("HARM - could not load mob - {:?}", e);
-                return output;
+                warn!("ACT - from_mob - {:?}", e);
+                return vec![];
             }
         };
 
-        // TODO: handle different kinds of damage
-        if attack.damage.health() >= self.hp {
-            self.hp = 0;
-        } else {
-            self.hp -= attack.damage.health();
+        match action.effect {
+            Effect::Harm(damage) => self.harm(from_mob, damage, world),
+            Effect::Heal(_restore) => vec![],
         }
-
-        // TODO: handle death and subsequent activites (looting? xp? oh my!)
-        let target_update =
-            Update::combat(&attack.to, format!("{:?} hurt you!", attacking_mob.name()));
-
-        let attacker_update = if self.is_dead() {
-            Update::combat(&attack.from, format!("You killed {:?}!", self.name()))
-        } else {
-            Update::combat(&attack.from, format!("You hit {:?}!", self.name()))
-        };
-
-        output.push(target_update);
-        output.push(attacker_update);
-
-        output
     }
 
-    pub fn restore(&mut self, restore: Restore) -> Vec<Update> {
-        let mut output = vec![];
-
-        // TODO: handle different kinds of healing
-        let new_hp = self.hp + restore.heal.health();
-        if new_hp >= self.max_health() {
-            self.hp = self.max_health();
+    fn harm(&mut self, attacker: Mob, damage: Damage, _world: &World) -> Vec<Update> {
+        if damage.health() >= self.hp {
+            self.hp = 0;
         } else {
-            self.hp = new_hp;
+            self.hp -= damage.health();
         }
 
-        let target_update = Update::combat(&restore.to, "You've been healed!".to_owned());
+        let target_update =
+            Update::combat(&self.entity_id, format!("{} hurt you!", attacker.name()));
 
-        let attacker_update =
-            Update::combat(&restore.from, format!("You healed {:?}!", self.name()));
+        let attacker_update = if self.is_dead() {
+            Update::combat(&attacker.entity_id, format!("You killed {}!", self.name()))
+        } else {
+            Update::combat(&attacker.entity_id, format!("You hit {}!", self.name()))
+        };
 
-        output.push(target_update);
-        output.push(attacker_update);
-
-        output
+        vec![target_update, attacker_update]
     }
 }
 
@@ -288,23 +269,6 @@ impl Default for Doing {
 }
 
 #[derive(Debug, Clone)]
-pub struct Attack {
-    pub from: Identifier,
-    pub to: Identifier,
-    pub damage: Damage,
-}
-
-impl Attack {
-    pub fn new(from: &Identifier, to: &Identifier, damage: Damage) -> Self {
-        Self {
-            from: from.to_owned(),
-            to: to.to_owned(),
-            damage,
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
 pub enum Damage {
     Blunt(usize),
     Edged(usize),
@@ -326,20 +290,13 @@ impl Damage {
 }
 
 #[derive(Debug)]
-pub struct Restore {
-    pub from: Identifier,
-    pub to: Identifier,
-    pub heal: Heal,
-}
-
-#[derive(Debug)]
-pub enum Heal {
+pub enum Restore {
     Max,
     Health(usize),
     Antidote(usize),
 }
 
-impl Heal {
+impl Restore {
     pub fn health(&self) -> usize {
         match self {
             Self::Max => std::usize::MAX,
@@ -347,4 +304,27 @@ impl Heal {
             Self::Health(hp) => *hp,
         }
     }
+}
+
+#[derive(Debug)]
+pub struct Action {
+    pub from: Identifier,
+    pub to: Identifier,
+    pub effect: Effect,
+}
+
+impl Action {
+    pub fn new(from: &Identifier, to: &Identifier, effect: Effect) -> Self {
+        Self {
+            from: from.clone(),
+            to: to.clone(),
+            effect,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum Effect {
+    Harm(Damage),
+    Heal(Restore),
 }

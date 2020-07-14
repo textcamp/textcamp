@@ -144,15 +144,15 @@ impl Melee for Space {
             .collect();
 
         // get the list of attacks from the mobs
-        let attacks: Vec<Attack> = mobs.iter().flat_map(|m| m.fight(&mobs, dice)).collect();
+        let actions: Vec<Action> = mobs.iter().flat_map(|m| m.fight(&mobs, dice)).collect();
 
         let mut updates = vec![];
 
-        // apply the attacks to the mobs
-        for attack in attacks {
-            if let Ok(mut target) = world.mobs.get(&attack.to) {
-                trace!("Applying attack ... {:?}!", attack);
-                updates.append(&mut target.harm(attack, world));
+        // apply the actions to the mobs
+        for action in actions {
+            if let Ok(mut target) = world.mobs.get(&action.to) {
+                trace!("Applying action ... {:?}!", action);
+                updates.append(&mut target.act(action, world));
                 updates.push(Update::health(target.entity_id(), target.health()));
 
                 // remove the dead from the population and the world

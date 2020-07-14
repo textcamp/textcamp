@@ -1,7 +1,7 @@
 pub mod mob;
 pub mod space;
 
-pub use mob::{Attack, Doing, Mob, Restore};
+pub use mob::{Action, Doing, Mob, Restore};
 pub use space::Space;
 
 use crate::core::{Dice, Identifier, Markup, TCError, Update, World};
