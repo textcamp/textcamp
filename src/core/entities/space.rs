@@ -152,7 +152,7 @@ impl Melee for Space {
         for attack in attacks {
             if let Ok(mut target) = world.mobs.get(&attack.to) {
                 trace!("Applying attack ... {:?}!", attack);
-                updates.append(&mut target.harm(attack));
+                updates.append(&mut target.harm(attack, world));
                 updates.push(Update::health(target.entity_id(), target.health()));
 
                 // remove the dead from the population and the world

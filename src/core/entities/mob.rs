@@ -1,5 +1,6 @@
 use crate::core::entities::*;
 use crate::core::*;
+use log::warn;
 
 use std::time::{Duration, Instant};
 
@@ -135,37 +136,45 @@ impl Mob {
         }
 
         // see if any of the mobs are enemies.
-        let enemies: Vec<&Identifier> = mobs
+        let enemies: Vec<Mob> = mobs
             .iter()
             .filter(|m| self.enemies.contains(m.entity_id())) // are they in your enemy list?
-            .map(|m| m.entity_id())
+            .cloned()
             .collect();
 
         trace!("{} has enemies here! {:?}", self.name(), enemies);
 
         // target the first enemy, if there are any
-        let target_id = match enemies.first() {
-            Some(id) => id,
+        let target = match enemies.first() {
+            Some(mob) => mob,
             None => {
                 return None;
             }
         };
 
-        trace!("{:?} attacking {:?} !!", self.name, target_id);
+        trace!("{} attacks {} !!", self.name, target.name);
 
         // TODO: determine different kinds of attacks
-        let attack = Attack::new(&self.entity_id, target_id, Damage::Blunt(1));
+        let attack = Attack::new(&self.entity_id, target.entity_id(), Damage::Blunt(1));
 
         Some(attack)
     }
 
-    pub fn harm(&mut self, attack: Attack) -> Vec<Update> {
+    pub fn harm(&mut self, attack: Attack, world: &World) -> Vec<Update> {
         let mut output = vec![];
 
         // ensure the attack is directed at this particular character
         if attack.to != self.entity_id {
             return output;
         }
+
+        let attacking_mob = match world.mobs.get(&attack.from) {
+            Ok(m) => m,
+            Err(e) => {
+                warn!("HARM - could not load mob - {:?}", e);
+                return output;
+            }
+        };
 
         // TODO: handle different kinds of damage
         if attack.damage.health() >= self.hp {
@@ -175,7 +184,8 @@ impl Mob {
         }
 
         // TODO: handle death and subsequent activites (looting? xp? oh my!)
-        let target_update = Update::combat(&attack.to, "You've been hurt!".to_owned());
+        let target_update =
+            Update::combat(&attack.to, format!("{:?} hurt you!", attacking_mob.name()));
 
         let attacker_update = if self.is_dead() {
             Update::combat(&attack.from, format!("You killed {:?}!", self.name()))
