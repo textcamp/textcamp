@@ -25,7 +25,7 @@ pub use population::Population;
 pub use prototypes::{ItemPrototype, MobPrototype, Prototyped, Prototypes};
 pub use spawn::Spawn;
 pub use update::Update;
-pub use world::{Action, World};
+pub use world::{Command, World};
 
 pub use entities::*;
 

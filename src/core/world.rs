@@ -6,12 +6,12 @@ use crate::core::*;
 use std::time::Instant;
 
 #[derive(Debug)]
-pub struct Action {
+pub struct Command {
     from: Identifier,
     phrase: Phrase,
 }
 
-impl Action {
+impl Command {
     pub fn new(from: &Identifier, phrase: Phrase) -> Self {
         Self {
             from: from.to_owned(),
@@ -67,7 +67,7 @@ impl World {
         &self.clock
     }
 
-    pub fn command(&mut self, msg: Action) -> Vec<Update> {
+    pub fn command(&mut self, msg: Command) -> Vec<Update> {
         trace!("COMMAND - msg: {:?}", msg);
 
         let results = match msg.phrase.verb().to_uppercase().as_ref() {

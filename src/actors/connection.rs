@@ -87,7 +87,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for Connection {
             Ok(ws::Message::Text(text)) => {
                 match Phrase::from(&text) {
                     Some(phrase) => {
-                        let action = Action::new(&self.identifier, phrase);
+                        let action = Command::new(&self.identifier, phrase);
                         let updates = self.world.write().unwrap().command(action);
                         // not all updates are for this connection, so we send them over to the delivery actor
                         let delivery = Delivery::from_registry();
