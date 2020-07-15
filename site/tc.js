@@ -1,57 +1,57 @@
 let route = (json) => {
-    if (json.time) {
+    if ('time' in json) {
         showTime(json.time);
         return;
     }
 
-    if (json.info) {
+    if ('info' in json) {
         showInfo(json.info);
         return;
     }
 
-    if (json.exits) {
+    if ('exits' in json) {
         showExits(json.exits);
         return;
     }
 
-    if (json.error) {
+    if ('error' in json) {
         record('error', json.error);
         return;
     }
 
-    if (json.combat) {
+    if ('combat' in json) {
         showCombat(json.combat);
         return;
     }
 
-    if (json.inventory) {
+    if ('inventory' in json) {
         showInventory(json.inventory);
         return;
     }
 
-    if (json.space) {
+    if ('space' in json) {
         showSpace(json.space);
         return;
     }
 
-    if (json.item) {
+    if ('item' in json) {
         // take over the main description
         showSpace(json.item);
         return;
     }
 
-    if (json.character) {
+    if ('character' in json) {
         // take over the main description
         showSpace(json.character);
         return;
     }
 
-    if (json.population) {
+    if ('population' in json) {
         showPopulation(json.population);
         return;
     }
 
-    if (json.health) {
+    if ('health' in json) {
         showHealth(json.health);
         return;
     }
