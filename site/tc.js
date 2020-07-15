@@ -156,6 +156,11 @@ let showTime = (time) => {
 }
 
 let showHealth = (health) => {
+    if (health === 0) {
+        record('health', "💀".repeat(5));
+        return;
+    }
+
     let red_hearts = Math.round(health / 20);
     let black_hearts = 5 - red_hearts;
     record('health', `${"❤️".repeat(red_hearts)}${"🖤".repeat(black_hearts)}`);
