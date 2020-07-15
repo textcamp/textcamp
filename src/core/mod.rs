@@ -1,16 +1,33 @@
+/// In game time calculations
 pub mod clock;
+
+/// Random number generation using the dice model
 pub mod dice;
+
+/// Represents directions for exiting a Space
 pub mod direction;
+
+/// Entities are tickable, describable, and stateful
 pub mod entities;
 pub mod errors;
+
+/// Manages items for a Space or Mob
 pub mod inventory;
 pub mod item;
 pub mod markup;
+
+/// Parser for input text from players
 pub mod phrase;
+
+/// Represents the Mobs in a given Space
 pub mod population;
 pub mod prototypes;
 pub mod spawn;
+
+/// Update messages that are sent to the client
 pub mod update;
+
+/// Universal, shared game state
 pub mod world;
 
 pub use clock::{Clock, DateTime};

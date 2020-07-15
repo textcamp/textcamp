@@ -5,6 +5,8 @@ use crate::core::*;
 
 use std::time::Instant;
 
+/// Represents a command from a player, sent from the Connection actor into
+/// the shared World instance.
 #[derive(Debug)]
 pub struct Command {
     from: Identifier,
@@ -20,6 +22,7 @@ impl Command {
     }
 }
 
+/// Represents the state of the world. Deep, man.
 #[derive(Debug)]
 pub struct World {
     // entities which receive ticks, have state, etc.
@@ -51,6 +54,7 @@ impl World {
         }
     }
 
+    /// The fundamental unit of game time. Called by the Periodic actor.
     pub fn tick(&mut self) -> Vec<Update> {
         let mut output = vec![];
         let mut dice = Dice::new();
@@ -67,6 +71,7 @@ impl World {
         &self.clock
     }
 
+    /// Input from the clients, called by the Connection actor
     pub fn command(&mut self, msg: Command) -> Vec<Update> {
         trace!("COMMAND - msg: {:?}", msg);
 
@@ -102,6 +107,7 @@ impl World {
         updates
     }
 
+    /// Called by the Periodic actor to step through combat actions
     pub fn melee(&self) -> Vec<Update> {
         let started = Instant::now();
         let output = self.spaces.melee(&self, &mut Dice::new());
@@ -111,13 +117,8 @@ impl World {
         output
     }
 
-    pub fn mob_space(&self, mob_id: &Identifier) -> Result<(Mob, Space), TCError> {
-        let mob = self.mobs.get(mob_id)?;
-        let space = self.spaces.get(&mob.space_id)?;
-
-        Ok((mob, space))
-    }
-
+    /// Creates a new hero from the "HERO" prototype, and puts them in the "ORIGIN" space.
+    /// If either can't be found, this will panic and poison the entire system.
     pub fn create_hero(&self) -> Identifier {
         let mut hero = self
             .mob_prototypes
@@ -143,8 +144,10 @@ impl World {
     // ACTIONS! ---------------------------------------------------------------------------------
 
     pub fn refresh(&self, mob_id: &Identifier) -> Result<Vec<Update>, TCError> {
+        let mob = self.mobs.get(mob_id)?;
+        let space = self.spaces.get(&mob.space_id)?;
+
         let mut output = vec![];
-        let (mob, space) = self.mob_space(mob_id)?;
 
         output.push(Update::exits(mob_id, &space.exits));
         output.push(Update::character(mob_id, mob.describe(&self)));
@@ -210,7 +213,8 @@ impl World {
         mob_id: &Identifier,
         arg: Option<&String>,
     ) -> Result<Vec<Update>, TCError> {
-        let (_, space) = self.mob_space(mob_id)?;
+        let mob = self.mobs.get(mob_id)?;
+        let space = self.spaces.get(&mob.space_id)?;
 
         // if arg is None, we're looking at the current space description. Easy!
         if arg.is_none() {
@@ -318,7 +322,8 @@ impl World {
     ) -> Result<Vec<Update>, TCError> {
         let target_name = arg.ok_or_else(|| TCError::user("Fight who?"))?;
 
-        let (mob, space) = self.mob_space(mob_id)?;
+        let mob = self.mobs.get(mob_id)?;
+        let space = self.spaces.get(&mob.space_id)?;
 
         for local_mob in &space.population.mobs {
             let mut target_mob = self.mobs.get(&local_mob)?;
