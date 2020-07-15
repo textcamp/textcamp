@@ -97,19 +97,11 @@ let enterKey = (e) => {
 }
 
 let showInfo = (info) => {
-    let elementId = `info-content`;
-    let element = document.getElementById(elementId);
-    element.innerHTML = element.innerHTML + info + "\n";
-    element.style.opacity = "1";
-
+    showTemporary(combat);
 }
 
 let showCombat = (combat) => {
-    let elementId = `combat-content`;
-    let element = document.getElementById(elementId);
-    element.innerHTML = element.innerHTML + combat + "\n";
-    element.style.opacity = "1";
-
+    showTemporary(combat);
 }
 
 let showSpace = (space) => {
@@ -173,4 +165,32 @@ let doAction = (action) => {
 
 let asAction = (label, action) => {
     return `<span class="action" onclick="doAction('${action}'); return false;">${label}</span>`;
+}
+
+let showTemporary = (text) => {
+    let elementId = "temporary-messages";
+    let messages = document.getElementById(elementId);
+
+    var item = document.createElement("li");
+    let id = randomIdentifier();
+    item.id = id;
+    item.innerText = text;
+
+    messages.appendChild(item);
+    setTimeout(() => { fade(id); }, 1000);
+}
+
+let randomIdentifier = () => {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+}
+
+let fade = (id) => {
+    let target = document.getElementById(id);
+    target.classList.add("fade");
+    setTimeout(() => { remove(id); }, 3000);
+}
+
+let remove = (id) => {
+    let target = document.getElementById(id);
+    target.remove();
 }
