@@ -178,12 +178,12 @@ impl Mob {
         };
 
         match action.effect {
-            Effect::Harm(damage) => self.harm(from_mob, damage, world),
+            Effect::Harm(damage) => self.harm(&from_mob, damage, world),
             Effect::Heal(_restore) => vec![],
         }
     }
 
-    fn harm(&mut self, attacker: Mob, damage: Damage, _world: &World) -> Vec<Update> {
+    fn harm(&mut self, attacker: &Mob, damage: Damage, _world: &World) -> Vec<Update> {
         if damage.health() >= self.hp {
             self.hp = 0;
         } else {
@@ -201,6 +201,17 @@ impl Mob {
 
         vec![target_update, attacker_update]
     }
+
+    fn heal(&mut self, _healer: Option<&Mob>, restore: Restore, _world: &World) -> Vec<Update> {
+        let new_hp = self.hp + restore.health();
+        if new_hp > self.constitution {
+            self.hp = self.constitution;
+        } else {
+            self.hp = new_hp;
+        }
+
+        vec![Update::health(&self.entity_id, self.health())]
+    }
 }
 
 impl Default for Mob {
@@ -217,14 +228,7 @@ impl Entity for Mob {
 
 impl Tickable for Mob {
     fn tick(&mut self, _world: &World, _dice: &mut Dice) -> Vec<Update> {
-        let mut output = vec![];
-
-        if self.hp < self.constitution {
-            self.hp += 1;
-            output.push(Update::health(&self.entity_id, self.health()));
-        }
-
-        output
+        self.heal(None, Restore::Health(1), _world)
     }
 }
 
