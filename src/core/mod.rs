@@ -4,9 +4,6 @@ pub mod clock;
 /// Random number generation using the dice model
 pub mod dice;
 
-/// Represents directions for exiting a Space
-pub mod direction;
-
 /// Entities are tickable, describable, and stateful
 pub mod entities;
 pub mod errors;
@@ -32,7 +29,6 @@ pub mod world;
 
 pub use clock::{Clock, DateTime};
 pub use dice::Dice;
-pub use direction::Direction;
 pub use errors::TCError;
 pub use inventory::Inventory;
 pub use item::Item;

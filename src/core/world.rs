@@ -169,8 +169,7 @@ impl World {
 
         // parse the direction
         let direction_src = arg.ok_or_else(|| TCError::user("Which way?"))?;
-        let direction = Direction::from(direction_src)
-            .ok_or_else(|| TCError::user("You can't go that way."))?;
+        let direction = direction_src.to_lowercase();
 
         let mut mob = self.mobs.get(mob_id)?;
         let mut current_space = self.spaces.get(&mob.space_id)?;

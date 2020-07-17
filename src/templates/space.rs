@@ -29,7 +29,7 @@ impl From<Importer> for Injector {
 
         for (raw_direction, raw_id) in template.exits.unwrap() {
             let exit_id = Identifier::from(raw_id);
-            let direction = Direction::from(&raw_direction).unwrap();
+            let direction = raw_direction.to_lowercase();
             injector.space.exits.insert(direction, exit_id);
         }
 

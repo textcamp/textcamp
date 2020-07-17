@@ -16,9 +16,8 @@ impl Update {
         }
     }
 
-    pub fn exits(to: &Identifier, raw_exits: &HashMap<Direction, Identifier>) -> Self {
-        let exits = raw_exits.keys().cloned().collect();
-        let wrapper = Wrapper::Exits(exits);
+    pub fn exits(to: &Identifier, exits: &HashMap<String, Identifier>) -> Self {
+        let wrapper = Wrapper::Exits(exits.keys().cloned().collect());
         Update::new(to, wrapper)
     }
 
@@ -85,7 +84,7 @@ pub enum Wrapper {
     Error(String),
     Extra(String),
     Combat(String),
-    Exits(Vec<Direction>),
+    Exits(Vec<String>),
     Space(Markup),
     Character(Markup),
     Item(Markup),

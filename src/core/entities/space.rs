@@ -7,7 +7,7 @@ use std::collections::HashMap;
 pub struct Space {
     entity_id: Identifier,
     pub description: Description,
-    pub exits: HashMap<Direction, Identifier>,
+    pub exits: HashMap<String, Identifier>,
     pub population: Population,
     pub inventory: Inventory,
     pub item_spawn: Vec<Spawn>,
