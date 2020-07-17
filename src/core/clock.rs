@@ -1,6 +1,8 @@
 use log::error;
 use serde::Serialize;
 
+// TODO: Phases of the moon!
+
 // One tick is 5 seconds of real time, and a minute of game time.
 pub const TICK_INTERVAL: u64 = 5;
 const HOUR: u64 = 30; // Thirty ticks represents one game hour ...
@@ -85,6 +87,29 @@ impl Clock {
         self.minute_of_day() / 60
     }
 
+    pub fn transition(&self) -> Vec<Transition> {
+        let mut output = vec![];
+
+        let basis = DAY / 12;
+        match self.tick_of_day() / basis {
+            2 => output.push(Transition::Morning),
+            5 => output.push(Transition::Day),
+            8 => output.push(Transition::Evening),
+            11 => output.push(Transition::Night),
+            _ => (),
+        }
+
+        match self.month() {
+            2 => output.push(Transition::Spring),
+            5 => output.push(Transition::Summer),
+            8 => output.push(Transition::Autumn),
+            11 => output.push(Transition::Winter),
+            _ => (),
+        }
+
+        output
+    }
+
     pub fn phase_of_day(&self) -> (DayPhase, Period) {
         let basis = DAY / 12;
         match self.tick_of_day() / basis {
@@ -165,4 +190,16 @@ pub enum DayPhase {
     Day,
     Evening,
     Night,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub enum Transition {
+    Morning,
+    Day,
+    Evening,
+    Night,
+    Winter,
+    Spring,
+    Summer,
+    Autumn,
 }
