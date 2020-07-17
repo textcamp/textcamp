@@ -9,11 +9,6 @@ let route = (json) => {
         return;
     }
 
-    if ('exits' in json) {
-        showExits(json.exits);
-        return;
-    }
-
     if ('error' in json) {
         record('error', json.error);
         return;
@@ -117,13 +112,6 @@ let showSpace = (space) => {
     let description = long_description.trim();
 
     record('space', description);
-}
-
-let showExits = (exits) => {
-    var output = "";
-    exits.forEach((direction) => output += asAction(direction, `go ${direction}`));
-
-    record('exits', output);
 }
 
 let showInventory = (inventory) => {
