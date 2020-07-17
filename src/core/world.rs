@@ -193,6 +193,8 @@ impl World {
 
         // set the location
         mob.space_id = new_space_id.to_owned();
+        // reset the enemies list
+        mob.enemies = vec![];
         self.mobs.insert(mob); // save the updated mob
 
         let new_space = self.spaces.get(&new_space_id)?;
