@@ -164,7 +164,7 @@ let doAction = (action) => {
 }
 
 let asAction = (label, action) => {
-    return `<span class="action" onclick="doAction('${action}'); return false;">${label}</span>`;
+    return `<span class="action" title="Action: ${action}" onclick="doAction('${action}'); return false;">${label}</span>`;
 }
 
 let showTemporary = (text) => {
