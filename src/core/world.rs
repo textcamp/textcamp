@@ -149,7 +149,6 @@ impl World {
 
         let mut output = vec![];
 
-        output.push(Update::exits(mob_id, &space.exits));
         output.push(Update::character(mob_id, mob.describe(&self)));
         output.push(Update::population(mob_id, space.population.names(&self)));
         output.push(Update::space(mob_id, space.describe(&self)));
@@ -200,7 +199,6 @@ impl World {
 
         // craft the update
         output.push(Update::space(mob_id, new_space.describe(&self)));
-        output.push(Update::exits(mob_id, &new_space.exits));
         output.push(Update::population(
             mob_id,
             new_space.population.names(&self),

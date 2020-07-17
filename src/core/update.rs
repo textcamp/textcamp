@@ -1,6 +1,5 @@
 use crate::core::*;
 use serde::Serialize;
-use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct Update {
@@ -14,11 +13,6 @@ impl Update {
             to: to.clone(),
             message,
         }
-    }
-
-    pub fn exits(to: &Identifier, exits: &HashMap<String, Identifier>) -> Self {
-        let wrapper = Wrapper::Exits(exits.keys().cloned().collect());
-        Update::new(to, wrapper)
     }
 
     pub fn population(to: &Identifier, message: Vec<String>) -> Self {
@@ -84,7 +78,6 @@ pub enum Wrapper {
     Error(String),
     Extra(String),
     Combat(String),
-    Exits(Vec<String>),
     Space(Markup),
     Character(Markup),
     Item(Markup),
