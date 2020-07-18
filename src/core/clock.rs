@@ -90,21 +90,22 @@ impl Clock {
     pub fn transition(&self) -> Vec<Transition> {
         let mut output = vec![];
 
-        let basis = DAY / 12;
-        match self.tick_of_day() / basis {
-            2 => output.push(Transition::Morning),
-            5 => output.push(Transition::Day),
-            8 => output.push(Transition::Evening),
-            11 => output.push(Transition::Night),
+        match self.tick_of_day() {
+            180 => output.push(Transition::Morning),
+            360 => output.push(Transition::Day),
+            720 => output.push(Transition::Evening),
+            0 => output.push(Transition::Night),
             _ => (),
         }
 
-        match self.month() {
-            2 => output.push(Transition::Spring),
-            5 => output.push(Transition::Summer),
-            8 => output.push(Transition::Autumn),
-            11 => output.push(Transition::Winter),
-            _ => (),
+        if self.day_of_month() == 0 {
+            match self.month() {
+                2 => output.push(Transition::Spring),
+                5 => output.push(Transition::Summer),
+                8 => output.push(Transition::Autumn),
+                11 => output.push(Transition::Winter),
+                _ => (),
+            }
         }
 
         output

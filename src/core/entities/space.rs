@@ -135,12 +135,12 @@ impl Melee for Space {
     fn melee(&mut self, world: &World, dice: &mut Dice) -> Vec<Update> {
         let population_count = self.population().len();
 
-        // filter out mobs that are busy
+        // filter out mobs that are busy or have no enemies
         let mobs: Vec<Mob> = self
             .population()
             .iter()
             .flat_map(|id| world.mobs.get(id))
-            .filter(|m| !m.is_busy())
+            .filter(|m| !(m.enemies.is_empty() || m.is_busy()))
             .collect();
 
         // get the list of attacks from the mobs

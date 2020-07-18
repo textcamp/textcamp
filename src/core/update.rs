@@ -69,6 +69,11 @@ impl Update {
         let wrapper = Wrapper::Health(pct);
         Update::new(to, wrapper)
     }
+
+    pub fn transition(to: &Identifier, message: &str) -> Self {
+        let wrapper = Wrapper::Info(message.to_string());
+        Update::new(to, wrapper)
+    }
 }
 
 #[derive(Serialize, Debug, Clone)]

@@ -227,8 +227,48 @@ impl Entity for Mob {
 }
 
 impl Tickable for Mob {
-    fn tick(&mut self, _world: &World, _dice: &mut Dice) -> Vec<Update> {
-        self.heal(None, Restore::Health(1), _world)
+    fn tick(&mut self, world: &World, _dice: &mut Dice) -> Vec<Update> {
+        let mut output = vec![];
+
+        // default healing per tick
+        output.append(&mut self.heal(None, Restore::Health(1), world));
+
+        // time transition? hero? let the player know
+        if self.prototype.eq("HERO") {
+            for transition in world.clock().transition() {
+                match transition {
+                    Transition::Morning => output.push(Update::transition(
+                        self.entity_id(),
+                        "The sky lightens in the east.",
+                    )),
+                    Transition::Day => {
+                        output.push(Update::transition(self.entity_id(), "It is day time."))
+                    }
+                    Transition::Evening => output.push(Update::transition(
+                        self.entity_id(),
+                        "The sky darkens as the sun sets in the west.",
+                    )),
+                    Transition::Night => output.push(Update::transition(
+                        self.entity_id(),
+                        "Night falls and the stars appear.",
+                    )),
+                    Transition::Spring => {
+                        output.push(Update::transition(self.entity_id(), "Spring has arrived."))
+                    }
+                    Transition::Summer => {
+                        output.push(Update::transition(self.entity_id(), "Summer has arrived."))
+                    }
+                    Transition::Autumn => {
+                        output.push(Update::transition(self.entity_id(), "Autumn has arrived."))
+                    }
+                    Transition::Winter => {
+                        output.push(Update::transition(self.entity_id(), "Winter has arrived."))
+                    }
+                }
+            }
+        }
+
+        output
     }
 }
 

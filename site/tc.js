@@ -92,7 +92,7 @@ let enterKey = (e) => {
 }
 
 let showInfo = (info) => {
-    showTemporary(combat);
+    showTemporary(info);
 }
 
 let showCombat = (combat) => {

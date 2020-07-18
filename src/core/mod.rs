@@ -27,7 +27,7 @@ pub mod update;
 /// Universal, shared game state
 pub mod world;
 
-pub use clock::{Clock, DateTime};
+pub use clock::{Clock, DateTime, Transition};
 pub use dice::Dice;
 pub use errors::TCError;
 pub use inventory::Inventory;
