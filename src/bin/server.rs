@@ -14,10 +14,7 @@ async fn ws_index(
     data: web::Data<RwLock<World>>,
 ) -> Result<HttpResponse, Error> {
     let world = data.into_inner();
-
-    // TODO: Login!
-    let character_id = world.read().unwrap().create_hero();
-    ws::start(Connection::new(world, character_id), &req, stream)
+    ws::start(Connection::new(world), &req, stream)
 }
 
 #[actix_rt::main]

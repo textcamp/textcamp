@@ -117,6 +117,15 @@ impl World {
         output
     }
 
+    /// Examines the authentication token for validity, and connects with an existing
+    /// character or a new character
+    pub fn authenticate(&self, _input: String) -> Option<Identifier> {
+        // TODO: validate input as an authentication token
+        // TODO: restore the hero from saved state
+        let identifier = self.create_hero();
+        Some(identifier)
+    }
+
     /// Creates a new hero from the "HERO" prototype, and puts them in the "ORIGIN" space.
     /// If either can't be found, this will panic and poison the entire system.
     pub fn create_hero(&self) -> Identifier {

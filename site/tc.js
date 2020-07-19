@@ -63,6 +63,7 @@ let socket = new WebSocket(`ws://${window.location.host}/ws/`);
 window.addEventListener("beforeunload", e => { socket.close() });
 
 socket.onopen = (e) => {
+    socket.send("FAKE_AUTH_TOKEN");
     socket.send("refresh");
 };
 
