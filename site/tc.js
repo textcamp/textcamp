@@ -1,3 +1,45 @@
+let proto = (document.location.protocol == 'https:' ? 'wss:' : 'ws:');
+let socket = new WebSocket(`${proto}//${window.location.host}/ws/`);
+
+window.addEventListener("beforeunload", e => { socket.close() });
+
+socket.onopen = (e) => {
+    socket.send("FAKE_AUTH_TOKEN");
+    socket.send("refresh");
+};
+
+socket.onmessage = (e) => {
+    let json = JSON.parse(e.data);
+    console.log(json);
+    route(json);
+};
+
+socket.onclose = (e) => {
+    console.log("Socket closed.")
+    record("error", "Connection closed.");
+
+};
+
+socket.onerror = (e) => {
+    console.log("Socket error!");
+    record("error", "Error connecting to the server!");
+};
+
+let startSession = () => {
+    // look for a session token
+    let token = localStorage.sessionToken;
+
+    if (token) {
+        // attempt to use it
+        socket.send(token);
+
+    } else {
+        // otherwise, prompt the user to start the magic link flow
+
+    }
+
+};
+
 let route = (json) => {
     if ('time' in json) {
         showTime(json.time);
@@ -57,31 +99,6 @@ let record = (target, str) => {
     let elementId = `${target}-content`;
     let element = document.getElementById(elementId);
     element.innerHTML = str;
-}
-
-let socket = new WebSocket(`ws://${window.location.host}/ws/`);
-window.addEventListener("beforeunload", e => { socket.close() });
-
-socket.onopen = (e) => {
-    socket.send("FAKE_AUTH_TOKEN");
-    socket.send("refresh");
-};
-
-socket.onmessage = (e) => {
-    let json = JSON.parse(e.data);
-    console.log(json);
-    route(json);
-};
-
-socket.onclose = (e) => {
-    console.log("Socket closed.")
-    record("error", "Connection closed.");
-
-};
-
-socket.onerror = (e) => {
-    console.log("Socket error!");
-    record("error", "Error connecting to the server!");
 }
 
 let enterKey = (e) => {
