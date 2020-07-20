@@ -23,6 +23,14 @@ code {
     padding: 2px;
 }
 
+#signin-interface, #game-interface {
+    display: none;
+}
+
+#signin-interface em {
+    font-size: smaller;
+}
+
 .grid-container {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;

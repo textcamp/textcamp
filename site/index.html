@@ -13,42 +13,73 @@
     <header>
     </header>
 
-    <div class="grid-container">
-        <div id="time-content" class="time"></div>
-        <div id="health-content" class="health"></div>
-        <div id="population-content" class="population"></div>
-        <div class="space">
-            <div id="space-content"></div>
-            <ul id="temporary-messages" class="temporary"></ul>
+    <div id="signin-interface">
+        <h3>Sign In to Textcamp 🏕</h3>
+        <p>
+            Enter in your e-mail address, and we'll send you a link to automatically
+            sign in to your account. If you don't have an account, one will be created
+            for you. 😎
+        </p>
+        <form method="post" action="/start-auth">
+            <label for="email">E-Mail Address:</label>
+            <input type="email" name="email" id="email" required>
+            <input type="submit" value="🚀">
+        </form>
+        <p>
+            <em>
+                Your e-mail address will not be abused or resold. We may contact you
+                infrequently with announcements, or to get your feedback. Thanks!
+            </em>
+        </p>
+    </div>
+
+    <div id="game-interface">
+        <div class="grid-container">
+            <div id="time-content" class="time"></div>
+            <div id="health-content" class="health"></div>
+            <div id="population-content" class="population"></div>
+            <div class="space">
+                <div id="space-content"></div>
+                <ul id="temporary-messages" class="temporary"></ul>
+            </div>
+            <div id="input" class="input">
+                <input type="text" onkeydown="enterKey(this)" autofocus></input>
+            </div>
         </div>
-        <div id="input" class="input">
-            <input type="text" onkeydown="enterKey(this)" autofocus></input>
+
+        <div id="inventory">
+            <h3>Inventory</h3>
+            <div id="inventory-content" class="content"></div>
         </div>
-    </div>
 
-    <div id="inventory">
-        <h3>Inventory</h3>
-        <div id="inventory-content" class="content"></div>
-    </div>
+        <div id="error">
+            <h3>Error</h3>
+            <div id="error-content" class="content"></div>
+        </div>
 
-    <div id="error">
-        <h3>Error</h3>
-        <div id="error-content" class="content"></div>
-    </div>
-
-    <div id="guide">
-        <h3>Commands</h3>
-        <ul>
-            <li><code>look [thing/name]</code> look at something</li>
-            <li><code>go [direction]</code> to move</li>
-            <li><code>take [thing]</code> to pick something up</li>
-            <li><code>drop [thing]</code> to put something down</li>
-            <li><code>fight [name]</code> to fight!</li>
-            <li><code>refresh</code> repopulates the screen</li>
-        </ul>
+        <div id="guide">
+            <h3>Commands</h3>
+            <ul>
+                <li><code>look [thing/name]</code> look at something</li>
+                <li><code>go [direction]</code> to move</li>
+                <li><code>take [thing]</code> to pick something up</li>
+                <li><code>drop [thing]</code> to put something down</li>
+                <li><code>fight [name]</code> to fight!</li>
+                <li><code>refresh</code> repopulates the screen</li>
+            </ul>
+        </div>
     </div>
 
     <script src="tc.js"></script>
+    <script>
+        if (sessionToken()) {
+            showGameInterface();
+            startGame();
+        } else {
+            showSigninInterface();
+        }
+    </script>
+
 
     <footer>
         <a href="https://text.camp/">🏕</a> |

@@ -1,8 +1,11 @@
+use std::sync::RwLock;
+
 use actix::prelude::*;
 use actix_files::Files;
-use actix_web::{middleware, web, App, Error, HttpRequest, HttpResponse, HttpServer, Result};
+use actix_web::{http, middleware, web, App, Error, HttpRequest, HttpResponse, HttpServer, Result};
 use actix_web_actors::ws;
-use std::sync::RwLock;
+
+use serde::Deserialize;
 
 use textcamp::actors::*;
 use textcamp::core::*;
@@ -17,6 +20,19 @@ async fn ws_index(
     ws::start(Connection::new(world), &req, stream)
 }
 
+#[derive(Deserialize, Debug)]
+struct AuthForm {
+    email: String,
+}
+
+async fn start_auth(form: web::Form<AuthForm>) -> HttpResponse {
+    let redirect = format!("/?sessionToken={}", form.email);
+    HttpResponse::Found()
+        .header(http::header::LOCATION, redirect)
+        .finish()
+        .into_body()
+}
+
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
@@ -29,7 +45,7 @@ async fn main() -> std::io::Result<()> {
     let mut world = World::new();
 
     // load world data from templates
-    bootstrap(&world_root, &mut world);
+    templates::bootstrap(&world_root, &mut world);
 
     // Prepare the world for sharing across connections
     let world_data = web::Data::new(RwLock::new(world));
@@ -42,13 +58,10 @@ async fn main() -> std::io::Result<()> {
             .app_data(world_data.clone())
             .wrap(middleware::Logger::default())
             .service(web::resource("/ws/").route(web::get().to(ws_index)))
+            .service(web::resource("/start-auth").route(web::post().to(start_auth)))
             .service(Files::new("/", "site").index_file("index.html"))
     })
     .bind(server_url)?
     .run()
     .await
-}
-
-fn bootstrap(world_root: &str, world: &mut World) {
-    templates::bootstrap(world_root, world);
 }

@@ -1,44 +1,64 @@
-let proto = (document.location.protocol == 'https:' ? 'wss:' : 'ws:');
-let socket = new WebSocket(`${proto}//${window.location.host}/ws/`);
+let showGameInterface = () => {
+    let si = document.getElementById("signin-interface");
+    si.style.display = "none";
+    let gi = document.getElementById("game-interface");
+    gi.style.display = "block";
+}
 
-window.addEventListener("beforeunload", e => { socket.close() });
+let showSigninInterface = () => {
+    let gi = document.getElementById("game-interface");
+    gi.style.display = "none";
+    let si = document.getElementById("signin-interface");
+    si.style.display = "block";
+}
 
-socket.onopen = (e) => {
-    socket.send("FAKE_AUTH_TOKEN");
-    socket.send("refresh");
-};
+let sessionToken = () => {
+    handleUrlToken();
+    return localStorage.sessionToken;
+}
 
-socket.onmessage = (e) => {
-    let json = JSON.parse(e.data);
-    console.log(json);
-    route(json);
-};
-
-socket.onclose = (e) => {
-    console.log("Socket closed.")
-    record("error", "Connection closed.");
-
-};
-
-socket.onerror = (e) => {
-    console.log("Socket error!");
-    record("error", "Error connecting to the server!");
-};
-
-let startSession = () => {
-    // look for a session token
-    let token = localStorage.sessionToken;
-
-    if (token) {
-        // attempt to use it
-        socket.send(token);
-
-    } else {
-        // otherwise, prompt the user to start the magic link flow
-
+let handleUrlToken = () => {
+    let query = window.location.search;
+    let params = new URLSearchParams(query);
+    let sessionToken = params.get("sessionToken");
+    if (sessionToken) {
+        localStorage.sessionToken = sessionToken;
     }
+}
 
-};
+let invalidateSession = () => {
+    localStorage.sessionToken = false;
+    showSigninInterface();
+}
+
+let startGame = () => {
+    let proto = (document.location.protocol == 'https:' ? 'wss:' : 'ws:');
+    let socket = new WebSocket(`${proto}//${window.location.host}/ws/`);
+
+    window.addEventListener("beforeunload", e => { socket.close() });
+
+    socket.onopen = (e) => {
+        socket.send(localStorage.sessionToken);
+        socket.send("refresh");
+    };
+
+    socket.onmessage = (e) => {
+        let json = JSON.parse(e.data);
+        console.log(json);
+        route(json);
+    };
+
+    socket.onclose = (e) => {
+        console.log("Socket closed.")
+        record("error", "Connection closed.");
+
+    };
+
+    socket.onerror = (e) => {
+        console.log("Socket error!");
+        record("error", "Error connecting to the server!");
+    };
+}
 
 let route = (json) => {
     if ('time' in json) {
