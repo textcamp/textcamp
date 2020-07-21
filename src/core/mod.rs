@@ -1,3 +1,6 @@
+/// Provides the authentication framework
+pub mod authentication;
+
 /// In game time calculations
 pub mod clock;
 

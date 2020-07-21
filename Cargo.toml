@@ -12,9 +12,12 @@ default-run = "server"
 debug = true # retain profiling information in release builds.
 
 [dependencies]
+# basic env and logging
 dotenv = "0"
 log = "0"
 env_logger = "0"
+
+# web stuff
 actix = "0"
 actix-rt = "1"
 actix-web = "2"
@@ -22,6 +25,14 @@ actix-web-actors = "2"
 actix-files = "0"
 serde = "1"
 serde_json = "1"
+
+# what's a game without rand?
 rand = "0"
+
+# readin in templates
 toml = "0"
 glob = "0"
+
+# sending emails and stuff
+rusoto_core = "0"
+rusoto_sesv2 = "0"
