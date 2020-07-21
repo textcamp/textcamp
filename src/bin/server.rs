@@ -25,8 +25,16 @@ struct AuthForm {
     email: String,
 }
 
-async fn start_auth(form: web::Form<AuthForm>) -> HttpResponse {
-    let redirect = format!("/?sessionToken={}", form.email);
+async fn start_auth(form: web::Form<AuthForm>, data: web::Data<RwLock<World>>) -> HttpResponse {
+    let world = data.into_inner();
+    world
+        .write()
+        .unwrap()
+        .authentication
+        .start_auth(&form.email)
+        .await;
+
+    let redirect = "/?check-email";
     HttpResponse::Found()
         .header(http::header::LOCATION, redirect)
         .finish()

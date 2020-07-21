@@ -25,6 +25,9 @@ impl Command {
 /// Represents the state of the world. Deep, man.
 #[derive(Debug)]
 pub struct World {
+    // authentication state
+    pub authentication: Authentication,
+
     // entities which receive ticks, have state, etc.
     pub mobs: HashStore<Mob>,
     pub spaces: HashStore<Space>,
@@ -46,6 +49,7 @@ impl Default for World {
 impl World {
     pub fn new() -> Self {
         Self {
+            authentication: Authentication::new(),
             mobs: HashStore::new(),
             spaces: HashStore::new(),
             item_prototypes: Prototypes::default(),
@@ -119,11 +123,14 @@ impl World {
 
     /// Examines the authentication token for validity, and connects with an existing
     /// character or a new character
-    pub fn authenticate(&self, _input: String) -> Option<Identifier> {
-        // TODO: validate input as an authentication token
-        // TODO: restore the hero from saved state
-        let identifier = self.create_hero();
-        Some(identifier)
+    pub fn authenticate(&mut self, input: String) -> Option<Identifier> {
+        if self.authentication.finish_auth(input) {
+            // TODO: restore the hero from saved state
+            let identifier = self.create_hero();
+            Some(identifier)
+        } else {
+            None
+        }
     }
 
     /// Creates a new hero from the "HERO" prototype, and puts them in the "ORIGIN" space.

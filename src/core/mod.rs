@@ -30,6 +30,7 @@ pub mod update;
 /// Universal, shared game state
 pub mod world;
 
+pub use authentication::Authentication;
 pub use clock::{Clock, DateTime, Transition};
 pub use dice::Dice;
 pub use errors::TCError;
