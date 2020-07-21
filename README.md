@@ -12,6 +12,8 @@ Alternatively, if you have Docker running, you can build it there with no system
 
 ## Running
 
+Copy the `example.env` file to `.env` and adjust the parameters to your taste.
+
 With a local build: `cargo run`
 
 With a Docker build: `docker run -dp 8080:8080 textcamp`
