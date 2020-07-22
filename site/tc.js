@@ -1,44 +1,19 @@
-let showGameInterface = () => {
-    let si = document.getElementById("signin-interface");
-    si.style.display = "none";
-    let gi = document.getElementById("game-interface");
-    gi.style.display = "block";
+let checkSession = () => {
+    // TODO: this is terrible 😂
+    return document.cookie.startsWith("session")
 }
 
-let showSigninInterface = () => {
-    let gi = document.getElementById("game-interface");
-    gi.style.display = "none";
-    let si = document.getElementById("signin-interface");
-    si.style.display = "block";
-}
+// Scope holder. This is also gross.
+// TODO: Refactor me
+var socket = null;
 
-let sessionToken = () => {
-    handleUrlToken();
-    return localStorage.sessionToken;
-}
-
-let handleUrlToken = () => {
-    let query = window.location.search;
-    let params = new URLSearchParams(query);
-    let sessionToken = params.get("sessionToken");
-    if (sessionToken) {
-        localStorage.sessionToken = sessionToken;
-    }
-}
-
-let invalidateSession = () => {
-    localStorage.sessionToken = false;
-    showSigninInterface();
-}
-
-let startGame = () => {
+if (checkSession()) {
     let proto = (document.location.protocol == 'https:' ? 'wss:' : 'ws:');
-    let socket = new WebSocket(`${proto}//${window.location.host}/ws/`);
+    socket = new WebSocket(`${proto}//${window.location.host}/ws/`);
 
     window.addEventListener("beforeunload", e => { socket.close() });
 
     socket.onopen = (e) => {
-        socket.send(localStorage.sessionToken);
         socket.send("refresh");
     };
 
@@ -58,6 +33,20 @@ let startGame = () => {
         console.log("Socket error!");
         record("error", "Error connecting to the server!");
     };
+};
+
+let showGameInterface = () => {
+    let si = document.getElementById("signin-interface");
+    si.style.display = "none";
+    let gi = document.getElementById("game-interface");
+    gi.style.display = "block";
+}
+
+let showSigninInterface = () => {
+    let gi = document.getElementById("game-interface");
+    gi.style.display = "none";
+    let si = document.getElementById("signin-interface");
+    si.style.display = "block";
 }
 
 let route = (json) => {

@@ -14,6 +14,15 @@ footer {
     padding: 5px;
 }
 
+header {
+    color: #a00;
+    font-size: smaller;
+    font-style: italic;
+    margin-bottom: 20px;
+    text-align: center;
+    background-color: yellow;
+}
+
 footer {
     border-top: 1px solid #888;
 }

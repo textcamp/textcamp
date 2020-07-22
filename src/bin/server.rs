@@ -2,14 +2,19 @@ use std::sync::RwLock;
 
 use actix::prelude::*;
 use actix_files::Files;
-use actix_web::{http, middleware, web, App, Error, HttpRequest, HttpResponse, HttpServer, Result};
+use actix_web::{
+    http, middleware, web, App, Error, HttpMessage, HttpRequest, HttpResponse, HttpServer, Result,
+};
 use actix_web_actors::ws;
 
+use log::info;
 use serde::Deserialize;
 
 use textcamp::actors::*;
 use textcamp::core::*;
 use textcamp::templates;
+
+const SESSION_COOKIE: &str = "session";
 
 async fn ws_index(
     req: HttpRequest,
@@ -17,7 +22,24 @@ async fn ws_index(
     data: web::Data<RwLock<World>>,
 ) -> Result<HttpResponse, Error> {
     let world = data.into_inner();
-    ws::start(Connection::new(world), &req, stream)
+
+    // check to see if we have the session token stored in the cookie.
+    // if not, 401 the request.
+    let session_token = match req.cookie(SESSION_COOKIE) {
+        Some(cookie) => cookie.value().to_owned(),
+        None => return Ok(HttpResponse::Unauthorized().finish().into_body()),
+    };
+
+    // attempt to validate the session token
+    let session_id = world.read().unwrap().authenticate_session(&session_token);
+
+    // check to see if the token returns an Identifier for the hero.
+    // if so, open the websocket and continue
+    // if not, 401 the request.
+    match session_id {
+        Some(identifier) => ws::start(Connection::new(world, identifier), &req, stream),
+        None => Ok(HttpResponse::Unauthorized().finish().into_body()),
+    }
 }
 
 #[derive(Deserialize, Debug)]
@@ -41,10 +63,45 @@ async fn start_auth(form: web::Form<AuthForm>, data: web::Data<RwLock<World>>) -
         .into_body()
 }
 
+#[derive(Deserialize, Debug)]
+struct OTPQuery {
+    token: String,
+}
+
+async fn otp(query: web::Query<OTPQuery>, data: web::Data<RwLock<World>>) -> HttpResponse {
+    let world = data.into_inner();
+    let result = world.write().unwrap().authenticate_otp(query.token.clone());
+
+    match result {
+        Some(session_token) => {
+            // Sucessful OTP token exchange. Set the session cookie and continue on!
+            let cookie = http::Cookie::new(SESSION_COOKIE, session_token);
+            HttpResponse::Found()
+                .header(http::header::LOCATION, "/?welcome")
+                .cookie(cookie)
+                .finish()
+                .into_body()
+        }
+        None => {
+            // Failed OTP token exchange!
+            let redirect = "/?bad-otp";
+            HttpResponse::Found()
+                .header(http::header::LOCATION, redirect)
+                .finish()
+                .into_body()
+        }
+    }
+}
+
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
     env_logger::init();
+
+    // Print out the received ENV for debugging
+    for (k, v) in std::env::vars() {
+        info!("{} = {}", k, v);
+    }
 
     let server_url = std::env::var("SERVER_URL").expect("SERVER_URL must be set");
     let world_root = std::env::var("WORLD_ROOT").unwrap_or_else(|_| "./world".to_owned());
@@ -67,6 +124,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(middleware::Logger::default())
             .service(web::resource("/ws/").route(web::get().to(ws_index)))
             .service(web::resource("/start-auth").route(web::post().to(start_auth)))
+            .service(web::resource("/otp").route(web::get().to(otp)))
             .service(Files::new("/", "site").index_file("index.html"))
     })
     .bind(server_url)?

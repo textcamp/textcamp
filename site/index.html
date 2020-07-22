@@ -11,6 +11,7 @@
 
 <body>
     <header>
+        🚨 This is a test server. All data and accounts are frequently deleted. 🚨
     </header>
 
     <div id="signin-interface">
@@ -72,9 +73,8 @@
 
     <script src="tc.js"></script>
     <script>
-        if (sessionToken()) {
+        if (checkSession()) {
             showGameInterface();
-            startGame();
         } else {
             showSigninInterface();
         }
@@ -84,7 +84,8 @@
     <footer>
         <a href="https://text.camp/">🏕</a> |
         <a href="https://github.com/textcamp/">Github</a> |
-        <a href="https://twitter.com/textdotcamp/">Twitter</a> | Copyright (c) 2019-2020 Peat Bakke
+        <a href="https://twitter.com/textdotcamp/">Twitter</a> | Copyright (c) 2019-2020 <a
+            href="mailto:peat@text.camp">Peat Bakke</a>
     </footer>
 </body>
 

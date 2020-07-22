@@ -25,18 +25,18 @@ impl Command {
 /// Represents the state of the world. Deep, man.
 #[derive(Debug)]
 pub struct World {
-    // authentication state
+    /// Token and authentication management
     pub authentication: Authentication,
 
-    // entities which receive ticks, have state, etc.
+    /// Entities which receive ticks, have state, etc.
     pub mobs: HashStore<Mob>,
     pub spaces: HashStore<Space>,
 
-    // master list of item and mob templates
+    /// Master list of item and mob templates
     pub item_prototypes: Prototypes<ItemPrototype>,
     pub mob_prototypes: Prototypes<MobPrototype>,
 
-    // world clock
+    /// World clock
     clock: Clock,
 }
 
@@ -71,6 +71,7 @@ impl World {
         output
     }
 
+    /// Provides a reference to the world clock
     pub fn clock(&self) -> &Clock {
         &self.clock
     }
@@ -121,16 +122,21 @@ impl World {
         output
     }
 
-    /// Examines the authentication token for validity, and connects with an existing
-    /// character or a new character
-    pub fn authenticate(&mut self, input: String) -> Option<Identifier> {
-        if self.authentication.finish_auth(input) {
+    /// Validates the OTP token in the e-mail authentication flow
+    pub fn authenticate_otp(&mut self, otp_token: String) -> Option<String> {
+        if self.authentication.consume_otp_token(otp_token) {
             // TODO: restore the hero from saved state
             let identifier = self.create_hero();
-            Some(identifier)
+            let session_token = self.authentication.start_session(&identifier);
+            Some(session_token)
         } else {
             None
         }
+    }
+
+    /// Validates the session token to support reconnections
+    pub fn authenticate_session(&self, session_token: &str) -> Option<Identifier> {
+        self.authentication.valid_session(session_token)
     }
 
     /// Creates a new hero from the "HERO" prototype, and puts them in the "ORIGIN" space.
@@ -159,7 +165,7 @@ impl World {
 
     // ACTIONS! ---------------------------------------------------------------------------------
 
-    pub fn refresh(&self, mob_id: &Identifier) -> Result<Vec<Update>, TCError> {
+    fn refresh(&self, mob_id: &Identifier) -> Result<Vec<Update>, TCError> {
         let mob = self.mobs.get(mob_id)?;
         let space = self.spaces.get(&mob.space_id)?;
 
@@ -175,11 +181,7 @@ impl World {
         Ok(output)
     }
 
-    pub fn go(
-        &mut self,
-        mob_id: &Identifier,
-        arg: Option<&String>,
-    ) -> Result<Vec<Update>, TCError> {
+    fn go(&mut self, mob_id: &Identifier, arg: Option<&String>) -> Result<Vec<Update>, TCError> {
         let mut output = vec![];
 
         // parse the direction
@@ -223,11 +225,7 @@ impl World {
         Ok(output)
     }
 
-    pub fn look(
-        &mut self,
-        mob_id: &Identifier,
-        arg: Option<&String>,
-    ) -> Result<Vec<Update>, TCError> {
+    fn look(&mut self, mob_id: &Identifier, arg: Option<&String>) -> Result<Vec<Update>, TCError> {
         let mob = self.mobs.get(mob_id)?;
         let space = self.spaces.get(&mob.space_id)?;
 
@@ -258,11 +256,7 @@ impl World {
         Err(TCError::user("You don't see that here."))
     }
 
-    pub fn take(
-        &mut self,
-        mob_id: &Identifier,
-        arg: Option<&String>,
-    ) -> Result<Vec<Update>, TCError> {
+    fn take(&mut self, mob_id: &Identifier, arg: Option<&String>) -> Result<Vec<Update>, TCError> {
         let mut output = vec![];
 
         let item_name = arg.ok_or_else(|| TCError::user("Take what?"))?;
@@ -290,11 +284,7 @@ impl World {
         Ok(output)
     }
 
-    pub fn drop(
-        &mut self,
-        mob_id: &Identifier,
-        arg: Option<&String>,
-    ) -> Result<Vec<Update>, TCError> {
+    fn drop(&mut self, mob_id: &Identifier, arg: Option<&String>) -> Result<Vec<Update>, TCError> {
         let mut output = vec![];
 
         let item_name = arg.ok_or_else(|| TCError::user("Take what?"))?;
@@ -322,7 +312,7 @@ impl World {
         Ok(output)
     }
 
-    pub fn inventory(&self, mob_id: &Identifier) -> Result<Vec<Update>, TCError> {
+    fn inventory(&self, mob_id: &Identifier) -> Result<Vec<Update>, TCError> {
         let mob = self.mobs.get(mob_id)?;
         let inventory = &mob.inventory;
         let update = Update::inventory(mob_id, inventory);
@@ -330,11 +320,7 @@ impl World {
         Ok(vec![update])
     }
 
-    pub fn fight(
-        &mut self,
-        mob_id: &Identifier,
-        arg: Option<&String>,
-    ) -> Result<Vec<Update>, TCError> {
+    fn fight(&mut self, mob_id: &Identifier, arg: Option<&String>) -> Result<Vec<Update>, TCError> {
         let target_name = arg.ok_or_else(|| TCError::user("Fight who?"))?;
 
         let mob = self.mobs.get(mob_id)?;
@@ -372,7 +358,7 @@ impl World {
         Err(TCError::user("You don't see them here."))
     }
 
-    pub fn time(&self, mob_id: &Identifier) -> Result<Vec<Update>, TCError> {
+    fn time(&self, mob_id: &Identifier) -> Result<Vec<Update>, TCError> {
         Ok(vec![Update::time(mob_id, &self.clock.into())])
     }
 }

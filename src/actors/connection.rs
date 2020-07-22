@@ -10,16 +10,20 @@ use crate::core::*;
 // The heartbeat pings the websocket connection to ensure it stays alive
 const HEARTBEAT_SEC: Duration = Duration::from_secs(30);
 
-// How long to wait to close the connection if we haven't received any updates from a client (including heartbeat ping/pongs)
+// How long to wait to close the connection if we haven't received any updates
+// from a client (including heartbeat ping/pongs)
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(60);
 
 // How often we send time (world clock) updates to the client
 const TIME_UPDATES: Duration = Duration::from_secs(10);
 
+/// Connection represents the interface between the player's websocket connection
+/// and the World. It maintains the connection, parses commands, sends messages
+/// to the player.
 #[derive(Debug)]
 pub struct Connection {
     /// represents the identifier of the character controlled by this connection
-    identifier: Option<Identifier>,
+    identifier: Identifier,
 
     /// used to maintain the websocket connection
     ws_heartbeat: Instant,
@@ -29,35 +33,18 @@ pub struct Connection {
 }
 
 impl Connection {
-    pub fn new(world: Arc<RwLock<World>>) -> Self {
+    pub fn new(world: Arc<RwLock<World>>, identifier: Identifier) -> Self {
         Connection {
-            identifier: None,
+            identifier,
             ws_heartbeat: Instant::now(),
             world,
         }
     }
 
-    fn handle_input(&mut self, input: String, ctx: &mut ws::WebsocketContext<Self>) {
-        if let Some(identifier) = &self.identifier {
-            // if we have an identifier, then we send a command on behalf of the character.
-            self.send_command(identifier, input);
-        } else {
-            // we don't have an identifier, so we assume the input is an authentication token
-            // which will be used to generate an identifier or fail with an error.
-            match self.world.write().unwrap().authenticate(input) {
-                Some(identifier) => {
-                    self.identifier = Some(identifier.clone());
-                    self.setup_delivery(&identifier, ctx);
-                }
-                None => self.authentication_failure(ctx),
-            }
-        }
-    }
-
-    fn send_command(&self, identifier: &Identifier, input: String) {
+    fn send_command(&self, input: String) {
         match Phrase::from(&input) {
             Some(phrase) => {
-                let action = Command::new(&identifier, phrase);
+                let action = Command::new(&self.identifier, phrase);
                 let updates = self.world.write().unwrap().command(action);
                 // not all updates are for this connection, so we send them over to the delivery actor
                 // TODO: World should send everything to Delivery
@@ -66,15 +53,6 @@ impl Connection {
             }
             None => debug!("Received empty message."),
         }
-    }
-
-    fn setup_delivery(&self, identifier: &Identifier, ctx: &mut ws::WebsocketContext<Self>) {
-        let delivery = Delivery::from_registry();
-        delivery.do_send(Register::new(identifier.clone(), ctx.address()));
-    }
-
-    fn authentication_failure(&self, ctx: &mut ws::WebsocketContext<Self>) {
-        ctx.text("{\"auth\" : false }");
     }
 }
 
@@ -95,10 +73,15 @@ impl Actor for Connection {
             ctx.ping(b"");
         });
 
+        // start sending time updates to the client
         ctx.run_interval(TIME_UPDATES, |act, ctx| {
             let date_time: DateTime = act.world.read().unwrap().clock().clone().into();
             ctx.text(serde_json::to_string(&update::Wrapper::Time(date_time)).unwrap());
         });
+
+        // register this connection for delivery
+        let delivery = Delivery::from_registry();
+        delivery.do_send(Register::new(self.identifier.clone(), ctx.address()));
     }
 
     fn stopped(&mut self, _ctx: &mut Self::Context) {
@@ -120,7 +103,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for Connection {
             }
             Ok(ws::Message::Text(text)) => {
                 trace!("Received {}", text);
-                self.handle_input(text, ctx);
+                self.send_command(text);
             }
             Ok(ws::Message::Close(reason)) => {
                 debug!("Connection closed by client.");
@@ -141,6 +124,7 @@ impl Handler<ClientText> for Connection {
     }
 }
 
+/// Contains a raw string to be sent out the websocket connection
 #[derive(Clone, Debug)]
 pub struct ClientText {
     pub message: String,
