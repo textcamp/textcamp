@@ -1,25 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond&display=swap');
+
 * {
-    font-size: large;
-    font-family: 'Fira Code', monospace;
-    text-shadow: 3px 3px 3px #ccc;
+    font-size: 3vw;
+    font-family: 'EB Garamond', Garamond, 'Times New Roman', Times, serif;
+    line-height: 1.75em;
+}
+
+h3 {
+    font-size: larger;
+}
+
+p {
+    margin: 1.5em 0;
+    text-indent: 0em;
 }
 
 body {
-    margin: 10px;
+    margin: 0 4em;
 }
 
 header,
 footer {
     padding: 5px;
+    text-align: center;
+    font-size: smaller;
 }
 
 header {
     color: #a00;
-    font-size: smaller;
     font-style: italic;
     margin-bottom: 20px;
-    text-align: center;
     background-color: yellow;
 }
 
@@ -34,10 +44,6 @@ code {
 
 #signin-interface, #game-interface {
     display: none;
-}
-
-#signin-interface em {
-    font-size: smaller;
 }
 
 .grid-container {
@@ -101,14 +107,9 @@ code {
     transition: opacity 3s ease-out;
 }
 
-h3 {
-    color: #888;
-}
-
 @media (prefers-color-scheme: dark) {
     * {
         color: #bbb;
         background-color: #1b1b18;
-        text-shadow: 3px 3px 3px #000;
     }
 }
