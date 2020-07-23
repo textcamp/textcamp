@@ -123,13 +123,13 @@ impl Authentication {
                 simple: Some(Message {
                     subject: Content {
                         charset: Some("utf-8".to_owned()),
-                        data: "Example email!".to_owned(),
+                        data: "🏕 Welcome to Textcamp!".to_owned(),
                     },
                     body: Body {
                         html: None,
                         text: Some(Content {
                             charset: Some("utf-8".to_owned()),
-                            data: format!("Your magic link: {}", magic_link),
+                            data: format!("Here's your magic link: {}\n\nThis link only works once, so savor the moment!", magic_link),
                         }),
                     },
                 }),
