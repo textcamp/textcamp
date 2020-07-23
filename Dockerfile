@@ -4,7 +4,7 @@ WORKDIR /usr/src/textcamp
 
 COPY . .
 
-RUN apk add --no-cache musl-dev
+RUN apk add --no-cache musl-dev openssl-dev
 RUN cargo build --release
 
 FROM alpine:latest
