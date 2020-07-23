@@ -115,6 +115,11 @@ impl Authentication {
         let magic_link = format!("{}/otp?token={}", public_url, otp_token);
         info!("Sending '{}' to {}", magic_link, to);
 
+        if std::env::var("NO_EMAIL").is_ok() {
+            info!("NO_EMAIL is set; not sending e-mail.");
+            return;
+        }
+
         let email_request = SendEmailRequest {
             configuration_set_name: None,
             content: EmailContent {
