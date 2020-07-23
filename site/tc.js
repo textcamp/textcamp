@@ -31,7 +31,10 @@ if (checkSession()) {
 
     socket.onerror = (e) => {
         console.log("Socket error!");
-        record("error", "Error connecting to the server!");
+        // axe the cookie
+        document.cookie = "session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        // redirect to /
+        window.location = "/";
     };
 };
 
