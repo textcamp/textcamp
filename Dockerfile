@@ -1,13 +1,18 @@
-FROM rust:1.44.1-alpine as build
+FROM rust:latest as build
+
+RUN apt-get update 
+RUN apt-get install -y openssl libssl-dev
 
 WORKDIR /usr/src/textcamp
 
 COPY . .
 
-RUN apk add --no-cache musl-dev openssl-dev
 RUN cargo build --release
 
-FROM alpine:latest
+FROM rust:slim
+
+RUN apt-get update 
+RUN apt-get install -y openssl libssl-dev
 
 COPY --from=build /usr/src/textcamp/site /usr/textcamp/site
 COPY --from=build /usr/src/textcamp/world /usr/textcamp/world
