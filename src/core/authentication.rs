@@ -11,7 +11,7 @@ use rusoto_sesv2::{
 
 use crate::core::Identifier;
 
-use log::{info, trace};
+use log::{info, trace, warn};
 
 // TODO: Associate OTP token with initiating browser
 // TODO: Expire OTP tokens after 15 minutes
@@ -111,18 +111,9 @@ impl Authentication {
         raw_email.trim().to_ascii_lowercase()
     }
 
-    fn aws_credentials() -> bool {
-        std::env::var("AWS_ACCESS_KEY_ID").is_ok() && std::env::var("AWS_SECRET_ACCESS_KEY").is_ok()
-    }
-
     async fn send_email(&self, to: String, public_url: String, otp_token: String) {
         let magic_link = format!("{}/otp?token={}", public_url, otp_token);
         info!("Sending '{}' to {}", magic_link, to);
-
-        // no credentials? no email.
-        if !Self::aws_credentials() {
-            return;
-        }
 
         let email_request = SendEmailRequest {
             configuration_set_name: None,
@@ -154,8 +145,9 @@ impl Authentication {
             reply_to_addresses: None,
         };
 
-        let result = self.ses_client.send_email(email_request).await;
-
-        trace!("{:?}", result);
+        match self.ses_client.send_email(email_request).await {
+            Ok(r) => trace!("{:?}", r),
+            Err(e) => warn!("SEND EMAIL ERROR: {}", e),
+        }
     }
 }
