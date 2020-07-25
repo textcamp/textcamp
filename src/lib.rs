@@ -40,3 +40,6 @@ pub mod core;
 
 /// For reading templates describing spaces, mobs, and items
 pub mod templates;
+
+/// Database and email services
+pub mod aws;
