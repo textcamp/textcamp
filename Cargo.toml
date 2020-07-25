@@ -33,6 +33,7 @@ rand = "0"
 toml = "0"
 glob = "0"
 
-# sending emails and stuff
+# AWS services. SES = email, Dynamo = NoSQL
 rusoto_core = "0"
 rusoto_sesv2 = "0"
+rusoto_dynamodb = "0"
