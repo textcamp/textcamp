@@ -11,6 +11,9 @@ default-run = "server"
 [profile.release]
 debug = true # retain profiling information in release builds.
 
+[dev-dependencies]
+tokio-test = "*"
+
 [dependencies]
 # basic env and logging
 dotenv = "0"

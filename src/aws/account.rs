@@ -7,7 +7,7 @@ pub const ACCOUNTS_TABLE: DynamoTable<'static> = DynamoTable {
     primary_key: "Email",
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Account {
     email: String,
     identifier: Identifier,
@@ -41,5 +41,39 @@ impl Into<Fields> for Account {
         fields.set_string("Identifier", self.identifier.into());
 
         fields
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::aws::dynamo::*;
+
+    // TODO: Move testing into aws::dynamo
+    #[test]
+    fn put_get_accounts() {
+        let test_accounts_table = DynamoTable {
+            name: "TestAccounts",
+            primary_key: "Email",
+        };
+
+        let db = Dynamo::new();
+
+        let put_account = Account {
+            email: "test@text.camp".to_owned(),
+            identifier: Identifier::random(),
+        };
+
+        let result = tokio_test::block_on(test_accounts_table.put(&db, put_account.clone()));
+        assert!(result.is_ok());
+
+        let result =
+            tokio_test::block_on(test_accounts_table.get::<Account>(&db, &put_account.email));
+        assert!(result.is_some());
+
+        if let Some(get_account) = result {
+            assert_eq!(get_account.email, put_account.email);
+            assert_eq!(get_account.identifier, put_account.identifier);
+        }
     }
 }
