@@ -1,5 +1,5 @@
-use crate::aws::dynamo::{DynamoRecord, DynamoTable, Fields, HasPrimaryKey};
 use crate::core::Identifier;
+use crate::services::db::{DynamoRecord, DynamoTable, Fields, HasPrimaryKey};
 use std::convert::TryFrom;
 
 pub const ACCOUNTS_TABLE: DynamoTable<'static> = DynamoTable {

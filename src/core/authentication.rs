@@ -4,14 +4,10 @@ use std::fmt;
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
 
-use rusoto_core::Region;
-use rusoto_sesv2::{
-    Body, Content, Destination, EmailContent, Message, SendEmailRequest, SesV2, SesV2Client,
-};
-
 use crate::core::Identifier;
+use crate::services::email::Email;
 
-use log::{info, trace, warn};
+use log::info;
 
 // TODO: Associate OTP token with initiating browser
 // TODO: Expire OTP tokens after 15 minutes
@@ -34,7 +30,7 @@ use log::{info, trace, warn};
 pub struct Authentication {
     otp_tokens: HashSet<String>,
     session_tokens: HashMap<String, Identifier>,
-    ses_client: SesV2Client,
+    email_client: Email,
 }
 
 impl fmt::Debug for Authentication {
@@ -55,12 +51,12 @@ impl Default for Authentication {
 impl Authentication {
     /// Returns a new Authentication instance
     pub fn new() -> Self {
-        let ses_client = SesV2Client::new(Region::default());
+        let email_client = Email::new();
         let otp_tokens = HashSet::new();
         let session_tokens = HashMap::new();
 
         Self {
-            ses_client,
+            email_client,
             otp_tokens,
             session_tokens,
         }
@@ -120,39 +116,13 @@ impl Authentication {
             return;
         }
 
-        let email_request = SendEmailRequest {
-            configuration_set_name: None,
-            content: EmailContent {
-                raw: None,
-                template: None,
-                simple: Some(Message {
-                    subject: Content {
-                        charset: Some("utf-8".to_owned()),
-                        data: "🏕 Welcome to Textcamp!".to_owned(),
-                    },
-                    body: Body {
-                        html: None,
-                        text: Some(Content {
-                            charset: Some("utf-8".to_owned()),
-                            data: format!("Here's your magic link: {}\n\nThis link only works once, so savor the moment!", magic_link),
-                        }),
-                    },
-                }),
-            },
-            destination: Destination {
-                bcc_addresses: None,
-                cc_addresses: Some(vec!["play@text.camp".to_owned()]),
-                to_addresses: Some(vec![to]),
-            },
-            email_tags: None,
-            feedback_forwarding_email_address: None,
-            from_email_address: Some("play@text.camp".to_owned()),
-            reply_to_addresses: None,
-        };
+        let cc = Some(vec!["play@text.camp".to_owned()]);
+        let subject = "🏕 Welcome to Textcamp!".to_owned();
+        let body = format!(
+            "Here's your magic link: {}\n\nThis link only works once, so savor the moment!",
+            magic_link
+        );
 
-        match self.ses_client.send_email(email_request).await {
-            Ok(r) => trace!("{:?}", r),
-            Err(e) => warn!("SEND EMAIL ERROR: {}", e),
-        }
+        self.email_client.send(to, cc, subject, body).await;
     }
 }

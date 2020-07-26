@@ -42,4 +42,4 @@ pub mod core;
 pub mod templates;
 
 /// Database and email services
-pub mod aws;
+pub mod services;
