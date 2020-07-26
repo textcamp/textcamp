@@ -30,7 +30,7 @@ impl Default for Dynamo {
 impl Dynamo {
     pub fn new() -> Self {
         Self {
-            client: DynamoDbClient::new(Region::UsWest2),
+            client: DynamoDbClient::new(Region::default()),
         }
     }
 }

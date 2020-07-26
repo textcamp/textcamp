@@ -55,7 +55,7 @@ impl Default for Authentication {
 impl Authentication {
     /// Returns a new Authentication instance
     pub fn new() -> Self {
-        let ses_client = SesV2Client::new(Region::UsWest2);
+        let ses_client = SesV2Client::new(Region::default());
         let otp_tokens = HashSet::new();
         let session_tokens = HashMap::new();
 
