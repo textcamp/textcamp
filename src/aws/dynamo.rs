@@ -139,3 +139,71 @@ impl From<HashMap<String, AttributeValue>> for Fields {
         Self { values }
     }
 }
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::core::Identifier;
+
+    #[test]
+    fn put_get_records() {
+        #[derive(Debug, Clone)]
+        struct TestRecord {
+            identifier: Identifier,
+            name: String,
+        }
+
+        impl DynamoRecord for TestRecord {};
+
+        impl HasPrimaryKey for TestRecord {
+            fn primary_key(&self) -> String {
+                self.identifier.clone().into()
+            }
+        }
+
+        impl From<TestRecord> for Fields {
+            fn from(record: TestRecord) -> Fields {
+                let mut fields = Fields::new();
+                fields.set_string("Identifier", record.identifier.into());
+                fields.set_string("Name", record.name);
+
+                fields
+            }
+        }
+
+        impl TryFrom<Fields> for TestRecord {
+            type Error = String;
+
+            fn try_from(values: Fields) -> Result<Self, Self::Error> {
+                let identifier_value = values.get_string("Identifier")?;
+                let identifier = Identifier::from(identifier_value);
+                let name = values.get_string("Name")?;
+
+                Ok(TestRecord { name, identifier })
+            }
+        }
+
+        let test_table = DynamoTable {
+            name: "TestRecords",
+            primary_key: "Identifier",
+        };
+
+        let db = Dynamo::new();
+
+        let put_record = TestRecord {
+            name: "test record".to_owned(),
+            identifier: Identifier::random(),
+        };
+
+        let result = tokio_test::block_on(test_table.put(&db, put_record.clone()));
+        assert!(result.is_ok());
+
+        let result =
+            tokio_test::block_on(test_table.get::<TestRecord>(&db, &put_record.primary_key()));
+        assert!(result.is_some());
+
+        if let Some(get_record) = result {
+            assert_eq!(get_record.name, put_record.name);
+            assert_eq!(get_record.identifier, put_record.identifier);
+        }
+    }
+}

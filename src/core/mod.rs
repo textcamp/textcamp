@@ -53,7 +53,7 @@ use serde::Serialize;
 #[derive(Eq, PartialEq, Hash, Debug, Clone, Ord, PartialOrd, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Identifier {
-    value: String,
+    pub value: String,
 }
 
 impl Identifier {
