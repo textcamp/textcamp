@@ -1,5 +1,4 @@
-use log::trace;
-
+use log::{trace, warn};
 /// Abstractions around AWS DynamoDB. The goal here is to cloak the complexity of DynamoDB calls, and
 /// facilitate the conversion between DynamoDB record sets and our local structs.
 use rusoto_core::Region;
@@ -46,6 +45,12 @@ impl<'a> DynamoTable<'a> {
     /// Returns an Option of the record for a given primary key.
     pub async fn get<T: DynamoRecord>(&self, db: &Dynamo, pk_value: &str) -> Option<T> {
         trace!("DynamoTable get: {:?}", pk_value);
+
+        if !super::service_credentials() {
+            warn!("DynamoTable get: no service credentials!");
+            return None;
+        };
+
         let attribute_values = db
             .client
             .get_item(self.build_get_query(pk_value))
@@ -61,6 +66,12 @@ impl<'a> DynamoTable<'a> {
     /// Inserts a record into the table, relying on the PrimaryKey trait to determine the value of the primary key.
     pub async fn put<T: DynamoRecord>(&self, db: &Dynamo, record: T) -> Result<(), String> {
         trace!("DynamoTable put: {:?}", record);
+
+        if !super::service_credentials() {
+            warn!("DynamoTable put: no service credentials!");
+            return Err("Missing service credentials".to_owned());
+        };
+
         db.client
             .put_item(self.build_put_query(record))
             .await
@@ -146,6 +157,11 @@ mod tests {
 
     #[test]
     fn put_get_records() {
+        if !crate::services::service_credentials() {
+            println!("AWS Credentials not configured, skipping test.");
+            return;
+        };
+
         #[derive(Debug, Clone)]
         struct TestRecord {
             identifier: Identifier,

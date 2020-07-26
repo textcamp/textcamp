@@ -62,6 +62,11 @@ impl Email {
             reply_to_addresses: None,
         };
 
+        if !super::service_credentials() {
+            warn!("Email send: no service credentials!");
+            return;
+        };
+
         match self.client.send_email(email_request).await {
             Ok(r) => trace!("{:?}", r),
             Err(e) => warn!("SEND EMAIL ERROR: {}", e),
