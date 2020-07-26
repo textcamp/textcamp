@@ -1,3 +1,5 @@
+use log::trace;
+
 /// Abstractions around AWS DynamoDB. The goal here is to cloak the complexity of DynamoDB calls, and
 /// facilitate the conversion between DynamoDB record sets and our local structs.
 use rusoto_core::Region;
@@ -43,6 +45,7 @@ pub struct DynamoTable<'a> {
 impl<'a> DynamoTable<'a> {
     /// Returns an Option of the record for a given primary key.
     pub async fn get<T: DynamoRecord>(&self, db: &Dynamo, pk_value: &str) -> Option<T> {
+        trace!("DynamoTable get: {:?}", pk_value);
         let attribute_values = db
             .client
             .get_item(self.build_get_query(pk_value))
@@ -57,6 +60,7 @@ impl<'a> DynamoTable<'a> {
 
     /// Inserts a record into the table, relying on the PrimaryKey trait to determine the value of the primary key.
     pub async fn put<T: DynamoRecord>(&self, db: &Dynamo, record: T) -> Result<(), String> {
+        trace!("DynamoTable put: {:?}", record);
         db.client
             .put_item(self.build_put_query(record))
             .await
@@ -71,6 +75,7 @@ impl<'a> DynamoTable<'a> {
         };
         let mut key = HashMap::new();
         key.insert(self.primary_key.to_owned(), pk);
+        trace!("DynamoTable build_get_query key: {:?}", key);
         GetItemInput {
             key,
             table_name: self.name.to_owned(),
@@ -94,7 +99,7 @@ pub trait HasPrimaryKey {
 
 /// Supertrait describing what needs to be implemented in order to store and retrieve a record from DynamoDB.
 /// We can guarantee the types and structure going into Dynamo, but not what comes out -- hence `Into` and `TryFrom`
-pub trait DynamoRecord: HasPrimaryKey + Into<Fields> + TryFrom<Fields> {}
+pub trait DynamoRecord: HasPrimaryKey + Into<Fields> + TryFrom<Fields> + std::fmt::Debug {}
 
 /// A wrapper around the Dynamo attribute value set to make extracting data a little simpler
 #[derive(Debug, Default)]
