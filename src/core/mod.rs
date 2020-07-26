@@ -82,6 +82,12 @@ impl From<String> for Identifier {
     }
 }
 
+impl From<Identifier> for String {
+    fn from(identifier: Identifier) -> Self {
+        identifier.value
+    }
+}
+
 impl From<&str> for Identifier {
     fn from(value: &str) -> Self {
         Self {
