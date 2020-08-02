@@ -58,7 +58,7 @@ impl Email {
             },
             email_tags: None,
             feedback_forwarding_email_address: None,
-            from_email_address: Some("play@text.camp".to_owned()),
+            from_email_address: Some("Play Textcamp <play@text.camp>".to_owned()),
             reply_to_addresses: None,
         };
 
