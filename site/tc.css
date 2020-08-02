@@ -1,13 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond&display=swap');
-
 * {
-    font-size: 3vw;
     font-family: 'EB Garamond', Garamond, 'Times New Roman', Times, serif;
+}
+
+body {
+    margin: 0 4em;
+    font-size: 1.8rem;
     line-height: 1.75em;
 }
 
 h3 {
-    font-size: larger;
+    font-size: 2.5rem;
 }
 
 p {
@@ -15,15 +18,11 @@ p {
     text-indent: 0em;
 }
 
-body {
-    margin: 0 4em;
-}
-
 header,
 footer {
     padding: 5px;
     text-align: center;
-    font-size: smaller;
+    font-size: 1.2rem;
 }
 
 header {
@@ -42,7 +41,8 @@ code {
     padding: 2px;
 }
 
-#signin-interface, #game-interface {
+#signin-interface,
+#game-interface {
     display: none;
 }
 
@@ -87,6 +87,10 @@ code {
 .input {
     grid-area: input;
     padding: 10px;
+}
+
+input {
+    font-size: 1em;
 }
 
 .input>input {
