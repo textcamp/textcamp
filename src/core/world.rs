@@ -126,7 +126,7 @@ impl World {
     pub async fn authenticate_otp(&mut self, otp_token: String) -> Option<String> {
         if self.authentication.consume_otp_token(otp_token) {
             // TODO: restore the hero from saved state
-            let identifier = self.create_hero();
+            let identifier = self.create_hero().await;
             let session_token = self.authentication.start_session(&identifier).await;
             Some(session_token)
         } else {
@@ -141,7 +141,7 @@ impl World {
 
     /// Creates a new hero from the "HERO" prototype, and puts them in the "ORIGIN" space.
     /// If either can't be found, this will panic and poison the entire system.
-    pub fn create_hero(&self) -> Identifier {
+    pub async fn create_hero(&self) -> Identifier {
         let mut hero = self
             .mob_prototypes
             .create("HERO")
@@ -156,7 +156,15 @@ impl World {
         hero.name = format!("Hero{}", rand::thread_rng().gen::<u8>());
         let hero_identifier = hero.identifier().clone();
 
-        self.mobs.insert(hero);
+        // add them to the local cache
+        self.mobs.insert(hero.clone());
+
+        let db = crate::services::db::Dynamo::new();
+        db.mobs
+            .put::<Mob>(&hero)
+            .await
+            .expect("Failed to persist Hero!");
+
         origin.population.add(&hero_identifier);
         self.spaces.insert(origin);
 
