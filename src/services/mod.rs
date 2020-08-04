@@ -1,6 +1,7 @@
-pub mod account;
+pub mod accounts;
 pub mod db;
 pub mod email;
+pub mod sessions;
 
 use rusoto_core::credential::*;
 
