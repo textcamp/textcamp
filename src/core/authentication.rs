@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::fmt;
 
 use rand::distributions::Alphanumeric;
@@ -6,8 +6,9 @@ use rand::{thread_rng, Rng};
 
 use crate::core::Identifier;
 use crate::services::email::Email;
+use crate::services::sessions::Session;
 
-use log::info;
+use log::{info, warn};
 
 // TODO: Associate OTP token with initiating browser
 // TODO: Expire OTP tokens after 15 minutes
@@ -29,7 +30,6 @@ use log::info;
 /// When a player signs out, `end_session` removes their session token.
 pub struct Authentication {
     otp_tokens: HashSet<String>,
-    session_tokens: HashMap<String, Identifier>,
     email_client: Email,
 }
 
@@ -53,12 +53,10 @@ impl Authentication {
     pub fn new() -> Self {
         let email_client = Email::new();
         let otp_tokens = HashSet::new();
-        let session_tokens = HashMap::new();
 
         Self {
             email_client,
             otp_tokens,
-            session_tokens,
         }
     }
 
@@ -86,21 +84,33 @@ impl Authentication {
     }
 
     /// Creates a new session token for the given identifier
-    pub fn start_session(&mut self, identifier: &Identifier) -> String {
-        let session_token = Self::new_token();
-        self.session_tokens
-            .insert(session_token.clone(), identifier.clone());
-        session_token
+    pub async fn start_session(&mut self, identifier: &Identifier) -> String {
+        let session = Session {
+            token: Self::new_token(),
+            identifier: identifier.clone(),
+        };
+
+        let db = crate::services::db::Dynamo::new();
+        if let Err(e) = db.sessions.put::<Session>(&session).await {
+            warn!("START_SESSION: {:?}", e);
+        }
+
+        session.token.clone()
     }
 
     /// If the provided token is valid, the associated Identifier is returned
-    pub fn valid_session(&self, token: &str) -> Option<Identifier> {
-        self.session_tokens.get(token).cloned()
+    pub async fn valid_session(&self, token: &str) -> Option<Identifier> {
+        let db = crate::services::db::Dynamo::new();
+        match db.sessions.get::<Session>(token).await {
+            Some(s) => Some(s.identifier),
+            None => None,
+        }
     }
 
     /// Deletes the session
-    pub fn end_session(&mut self, token: &str) {
-        self.session_tokens.remove(token);
+    pub async fn end_session(&mut self, token: &str) {
+        let db = crate::services::db::Dynamo::new();
+        db.sessions.delete(token).await;
     }
 
     fn normalize_email(raw_email: &str) -> String {

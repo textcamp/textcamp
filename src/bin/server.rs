@@ -31,7 +31,11 @@ async fn ws_index(
     };
 
     // attempt to validate the session token
-    let session_id = world.read().unwrap().authenticate_session(&session_token);
+    let session_id = world
+        .read()
+        .unwrap()
+        .authenticate_session(&session_token)
+        .await;
 
     // check to see if the token returns an Identifier for the hero.
     // if so, open the websocket and continue
@@ -70,7 +74,11 @@ struct OTPQuery {
 
 async fn otp(query: web::Query<OTPQuery>, data: web::Data<RwLock<World>>) -> HttpResponse {
     let world = data.into_inner();
-    let result = world.write().unwrap().authenticate_otp(query.token.clone());
+    let result = world
+        .write()
+        .unwrap()
+        .authenticate_otp(query.token.clone())
+        .await;
 
     match result {
         Some(session_token) => {

@@ -123,11 +123,11 @@ impl World {
     }
 
     /// Validates the OTP token in the e-mail authentication flow
-    pub fn authenticate_otp(&mut self, otp_token: String) -> Option<String> {
+    pub async fn authenticate_otp(&mut self, otp_token: String) -> Option<String> {
         if self.authentication.consume_otp_token(otp_token) {
             // TODO: restore the hero from saved state
             let identifier = self.create_hero();
-            let session_token = self.authentication.start_session(&identifier);
+            let session_token = self.authentication.start_session(&identifier).await;
             Some(session_token)
         } else {
             None
@@ -135,8 +135,8 @@ impl World {
     }
 
     /// Validates the session token to support reconnections
-    pub fn authenticate_session(&self, session_token: &str) -> Option<Identifier> {
-        self.authentication.valid_session(session_token)
+    pub async fn authenticate_session(&self, session_token: &str) -> Option<Identifier> {
+        self.authentication.valid_session(session_token).await
     }
 
     /// Creates a new hero from the "HERO" prototype, and puts them in the "ORIGIN" space.
