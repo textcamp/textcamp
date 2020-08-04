@@ -9,6 +9,13 @@ body {
     line-height: 1.75em;
 }
 
+#check-email {
+    display: none;
+    color: #080;
+    font-weight: bold;
+    text-align: center;
+}
+
 h3 {
     font-size: 2.5rem;
 }

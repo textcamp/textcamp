@@ -38,6 +38,12 @@ if (checkSession()) {
     };
 };
 
+let currentUrl = new URL(window.location);
+if (currentUrl.search.startsWith("?check-email")) {
+    let ce = document.getElementById("check-email");
+    ce.style.display = "block";
+}
+
 let showGameInterface = () => {
     let si = document.getElementById("signin-interface");
     si.style.display = "none";
