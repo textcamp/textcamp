@@ -1,6 +1,8 @@
 use crate::core::*;
 
-#[derive(Debug, Clone, Default)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub struct Inventory {
     items: Vec<Item>,
 }

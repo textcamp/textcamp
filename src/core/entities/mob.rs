@@ -1,13 +1,14 @@
 use crate::core::entities::*;
 use crate::core::*;
 use crate::services::db::*;
+
 use log::warn;
-use std::convert::TryFrom;
+use serde::{Deserialize, Serialize};
 
 use std::time::{Duration, Instant};
 
 /// Represents a mobile characters in the game, including PCs (Player Characters) and NPCs (Non-Player Characters).
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Mob {
     /// A globally unique identifier for this specific Mob
     entity_id: Identifier,
@@ -52,7 +53,8 @@ pub struct Mob {
     pub enemies: Vec<Identifier>,
 
     /// Determines whether a Mob is currently busy with an activity
-    pub delay: Instant,
+    #[serde(skip)]
+    pub delay: Option<Instant>,
 
     /// What the Mob is currently doing
     pub doing: Doing,
@@ -77,7 +79,7 @@ impl Mob {
             hp: 0,
 
             enemies: vec![],
-            delay: Instant::now(),
+            delay: None,
             doing: Doing::Nothing,
         }
     }
@@ -98,20 +100,23 @@ impl Mob {
     }
 
     pub fn doing(&self) -> &Doing {
-        if self.delay <= Instant::now() {
-            &Doing::Nothing
-        } else {
+        if self.is_busy() {
             &self.doing
+        } else {
+            &Doing::Nothing
         }
     }
 
     pub fn busy(&mut self, doing: Doing, duration: Duration) {
         self.doing = doing;
-        self.delay = Instant::now() + duration;
+        self.delay = Some(Instant::now() + duration);
     }
 
     pub fn is_busy(&self) -> bool {
-        self.delay >= Instant::now()
+        if let Some(delay) = self.delay {
+            return delay >= Instant::now();
+        }
+        false
     }
 
     pub fn max_health(&self) -> usize {
@@ -303,41 +308,13 @@ impl HasPrimaryKey for Mob {
     }
 }
 
-// TODO: Only saves the entity_id and name!!
-impl Into<Fields> for Mob {
-    fn into(self) -> Fields {
-        let mut fields = Fields::new();
-
-        fields.set_string("EntityId", self.entity_id.value.to_owned());
-        fields.set_string("Name", self.name().to_owned());
-
-        fields
-    }
-}
-
-// TODO: Only retrieves the entity_id and name!!
-impl TryFrom<Fields> for Mob {
-    type Error = String;
-
-    fn try_from(values: Fields) -> Result<Self, Self::Error> {
-        let identifier_value = values.get_string("EntityId")?;
-        let identifier = Identifier::from(identifier_value);
-
-        let mut mob = Mob::new();
-        mob.name = values.get_string("Name")?;
-        mob.entity_id = identifier;
-
-        Ok(mob)
-    }
-}
-
-#[derive(Default, Clone, Debug)]
+#[derive(Default, Clone, Debug, Serialize, Deserialize)]
 pub struct Description {
     pub text: String,
     pub clicks: HashMap<String, String>,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub enum Doing {
     Nothing,
     Casting,

@@ -48,10 +48,10 @@ pub use entities::*;
 
 use log::trace;
 use rand::Rng;
-use serde::Serialize;
+use serde::{de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
+use std::fmt;
 
-#[derive(Eq, PartialEq, Hash, Debug, Clone, Ord, PartialOrd, Serialize, Default)]
-#[serde(rename_all = "camelCase")]
+#[derive(Eq, PartialEq, Hash, Debug, Clone, Ord, PartialOrd, Default)]
 pub struct Identifier {
     pub value: String,
 }
@@ -93,5 +93,41 @@ impl From<&str> for Identifier {
         Self {
             value: value.to_owned(),
         }
+    }
+}
+
+impl Serialize for Identifier {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&self.value)
+    }
+}
+
+struct IdentifierVisitor;
+
+impl<'de> Deserialize<'de> for Identifier {
+    fn deserialize<D>(deserializer: D) -> Result<Identifier, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_string(IdentifierVisitor)
+    }
+}
+
+impl<'de> Visitor<'de> for IdentifierVisitor {
+    type Value = Identifier;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("a string")
+    }
+
+    fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        let identifier = Identifier::from(value.to_owned());
+        Ok(identifier)
     }
 }

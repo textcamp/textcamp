@@ -3,7 +3,9 @@ use crate::core::*;
 
 use std::collections::HashMap;
 
-#[derive(Clone, Debug, Default)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Item {
     pub identifier: Identifier,
     pub prototype: String,
@@ -37,7 +39,7 @@ impl Describe for Item {
     }
 }
 
-#[derive(Default, Clone, Debug)]
+#[derive(Default, Clone, Debug, Deserialize, Serialize)]
 pub struct Description {
     pub text: String,
     pub clicks: HashMap<String, String>,

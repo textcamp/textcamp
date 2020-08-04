@@ -1895,6 +1895,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde_dynamodb"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4bd887fdf521b38d7fa4bdcec1b72dc47d41c085240f453b2cf7dd0242bf3ea4"
+dependencies = [
+ "bytes",
+ "rusoto_dynamodb",
+ "serde",
+]
+
+[[package]]
 name = "serde_json"
 version = "1.0.57"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2104,6 +2115,7 @@ dependencies = [
  "rusoto_dynamodb",
  "rusoto_sesv2",
  "serde",
+ "serde_dynamodb",
  "serde_json",
  "tokio-test",
  "toml",
