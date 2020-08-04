@@ -14,7 +14,7 @@ impl Injector {
     }
 
     pub fn id(&self) -> &Identifier {
-        self.space.entity_id()
+        self.space.identifier()
     }
 
     pub fn inject(self, world: &mut World) {

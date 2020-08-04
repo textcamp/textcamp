@@ -11,7 +11,7 @@ use std::time::{Duration, Instant};
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Mob {
     /// A globally unique identifier for this specific Mob
-    entity_id: Identifier,
+    pub identifier: Identifier,
 
     /// What prototype was this Mob derived from?
     pub prototype: String,
@@ -63,7 +63,7 @@ pub struct Mob {
 impl Mob {
     pub fn new() -> Self {
         Self {
-            entity_id: Identifier::random(),
+            identifier: Identifier::random(),
             name: String::new(),
             prototype: String::new(),
             description: Description::default(),
@@ -145,7 +145,7 @@ impl Mob {
         // see if any of the mobs are enemies.
         let enemies: Vec<Mob> = mobs
             .iter()
-            .filter(|m| self.enemies.contains(m.entity_id())) // are they in your enemy list?
+            .filter(|m| self.enemies.contains(m.identifier())) // are they in your enemy list?
             .cloned()
             .collect();
 
@@ -163,8 +163,8 @@ impl Mob {
         // TODO: multiple attacks
         // TODO: healing actions
         let attack = Action::new(
-            &self.entity_id,
-            &target.entity_id,
+            &self.identifier,
+            &target.identifier,
             Effect::Harm(Damage::Blunt(1)),
         );
 
@@ -172,7 +172,7 @@ impl Mob {
     }
 
     pub fn act(&mut self, action: Action, world: &World) -> Vec<Update> {
-        if action.to != self.entity_id {
+        if action.to != self.identifier {
             return vec![];
         }
 
@@ -198,12 +198,12 @@ impl Mob {
         }
 
         let target_update =
-            Update::combat(&self.entity_id, format!("{} hurt you!", attacker.name()));
+            Update::combat(&self.identifier, format!("{} hurt you!", attacker.name()));
 
         let attacker_update = if self.is_dead() {
-            Update::combat(&attacker.entity_id, format!("You killed {}!", self.name()))
+            Update::combat(&attacker.identifier, format!("You killed {}!", self.name()))
         } else {
-            Update::combat(&attacker.entity_id, format!("You hit {}!", self.name()))
+            Update::combat(&attacker.identifier, format!("You hit {}!", self.name()))
         };
 
         vec![target_update, attacker_update]
@@ -217,7 +217,7 @@ impl Mob {
             self.hp = new_hp;
         }
 
-        vec![Update::health(&self.entity_id, self.health())]
+        vec![Update::health(&self.identifier, self.health())]
     }
 }
 
@@ -228,8 +228,8 @@ impl Default for Mob {
 }
 
 impl Entity for Mob {
-    fn entity_id(&self) -> &Identifier {
-        &self.entity_id
+    fn identifier(&self) -> &Identifier {
+        &self.identifier
     }
 }
 
@@ -245,31 +245,31 @@ impl Tickable for Mob {
             for transition in world.clock().transition() {
                 match transition {
                     Transition::Morning => output.push(Update::transition(
-                        self.entity_id(),
+                        self.identifier(),
                         "The sky lightens in the east.",
                     )),
                     Transition::Day => {
-                        output.push(Update::transition(self.entity_id(), "It is day time."))
+                        output.push(Update::transition(self.identifier(), "It is day time."))
                     }
                     Transition::Evening => output.push(Update::transition(
-                        self.entity_id(),
+                        self.identifier(),
                         "The sky darkens as the sun sets in the west.",
                     )),
                     Transition::Night => output.push(Update::transition(
-                        self.entity_id(),
+                        self.identifier(),
                         "Night falls and the stars appear.",
                     )),
                     Transition::Spring => {
-                        output.push(Update::transition(self.entity_id(), "Spring has arrived."))
+                        output.push(Update::transition(self.identifier(), "Spring has arrived."))
                     }
                     Transition::Summer => {
-                        output.push(Update::transition(self.entity_id(), "Summer has arrived."))
+                        output.push(Update::transition(self.identifier(), "Summer has arrived."))
                     }
                     Transition::Autumn => {
-                        output.push(Update::transition(self.entity_id(), "Autumn has arrived."))
+                        output.push(Update::transition(self.identifier(), "Autumn has arrived."))
                     }
                     Transition::Winter => {
-                        output.push(Update::transition(self.entity_id(), "Winter has arrived."))
+                        output.push(Update::transition(self.identifier(), "Winter has arrived."))
                     }
                 }
             }
@@ -304,7 +304,7 @@ impl DynamoRecord for Mob {}
 
 impl HasPrimaryKey for Mob {
     fn primary_key(&self) -> String {
-        self.entity_id.value.to_owned()
+        self.identifier.value.to_owned()
     }
 }
 

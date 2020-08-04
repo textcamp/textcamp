@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 #[derive(Clone, Debug)]
 pub struct Space {
-    entity_id: Identifier,
+    identifier: Identifier,
     pub description: Description,
     pub exits: HashMap<String, Identifier>,
     pub population: Population,
@@ -15,9 +15,9 @@ pub struct Space {
 }
 
 impl Space {
-    pub fn new(entity_id: &Identifier) -> Self {
+    pub fn new(identifier: &Identifier) -> Self {
         Self {
-            entity_id: entity_id.to_owned(),
+            identifier: identifier.to_owned(),
             description: Description::default(),
             exits: HashMap::new(),
             population: Population::default(),
@@ -43,8 +43,8 @@ impl Space {
 }
 
 impl Entity for Space {
-    fn entity_id(&self) -> &Identifier {
-        &self.entity_id
+    fn identifier(&self) -> &Identifier {
+        &self.identifier
     }
 }
 
@@ -73,8 +73,8 @@ impl Tickable for Space {
                 // do we already have the maximum population of this mob?
                 if mob_counter.get(&s.name).unwrap_or(&0) < &s.max {
                     if let Some(mut mob) = world.mob_prototypes.create(&s.name) {
-                        mob.space_id = self.entity_id().clone();
-                        self.population.add(mob.entity_id());
+                        mob.space_id = self.identifier().clone();
+                        self.population.add(mob.identifier());
                         world.mobs.insert(mob);
                     }
                 }
@@ -153,16 +153,16 @@ impl Melee for Space {
             if let Ok(mut target) = world.mobs.get(&action.to) {
                 trace!("Applying action ... {:?}!", action);
                 updates.append(&mut target.act(action, world));
-                updates.push(Update::health(target.entity_id(), target.health()));
+                updates.push(Update::health(target.identifier(), target.health()));
 
                 // remove the dead from the population and the world
                 if target.is_dead() {
                     updates.push(Update::combat(
-                        target.entity_id(),
+                        target.identifier(),
                         "You have been killed!".to_owned(),
                     ));
-                    self.population.remove(target.entity_id());
-                    world.mobs.remove(target.entity_id());
+                    self.population.remove(target.identifier());
+                    world.mobs.remove(target.identifier());
                 } else {
                     // mob is still alive, so update the target mob
                     world.mobs.insert(target);

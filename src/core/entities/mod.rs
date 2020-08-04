@@ -10,7 +10,7 @@ use std::collections::HashMap;
 use std::sync::RwLock;
 
 pub trait Entity {
-    fn entity_id(&self) -> &Identifier;
+    fn identifier(&self) -> &Identifier;
 }
 
 pub trait Tickable {
@@ -102,7 +102,7 @@ impl<T: Entity + Clone + std::fmt::Debug> EntityStore<T> for HashStore<T> {
         self.items
             .write()
             .unwrap()
-            .insert(item.entity_id().to_owned(), item);
+            .insert(item.identifier().to_owned(), item);
     }
 
     fn remove(&self, id: &Identifier) {

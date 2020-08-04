@@ -152,9 +152,9 @@ impl World {
             .get(&Identifier::origin())
             .expect("Could not load ORIGIN space!!");
 
-        hero.space_id = origin.entity_id().clone();
+        hero.space_id = origin.identifier().clone();
         hero.name = format!("Hero{}", rand::thread_rng().gen::<u8>());
-        let hero_identifier = hero.entity_id().clone();
+        let hero_identifier = hero.identifier().clone();
 
         self.mobs.insert(hero);
         origin.population.add(&hero_identifier);
@@ -329,22 +329,22 @@ impl World {
         for local_mob in &space.population.mobs {
             let mut target_mob = self.mobs.get(&local_mob)?;
             // add the enemy if the name matches and it isn't yourself!
-            if target_mob.name() == target_name && target_mob.entity_id() != mob.entity_id() {
+            if target_mob.name() == target_name && target_mob.identifier() != mob.identifier() {
                 let mut player = mob;
 
                 // both mobs become enemies!
-                player.add_enemy(target_mob.entity_id());
-                target_mob.add_enemy(player.entity_id());
+                player.add_enemy(target_mob.identifier());
+                target_mob.add_enemy(player.identifier());
 
                 let mut output = vec![];
 
                 output.push(Update::combat(
-                    player.entity_id(),
+                    player.identifier(),
                     format!("You attack {}!", target_name),
                 ));
 
                 output.push(Update::combat(
-                    target_mob.entity_id(),
+                    target_mob.identifier(),
                     format!("{} attacks you!", player.name()),
                 ));
 
