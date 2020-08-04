@@ -9,6 +9,8 @@ use std::fmt;
 /// Maintains the connection information required to interact with Dynamo
 pub struct Dynamo {
     client: DynamoDbClient,
+    pub accounts: Table,
+    pub mobs: Table,
 }
 
 impl fmt::Debug for Dynamo {
@@ -29,24 +31,33 @@ impl Dynamo {
     pub fn new() -> Self {
         Self {
             client: DynamoDbClient::new(Region::default()),
+            accounts: Table::new("Accounts", "identifier"),
+            mobs: Table::new("Mobs", "entity_id"),
         }
     }
 }
 
 /// Describes the attributes of a Dynamo collection: the name of the table, and the name of the primary key
 #[derive(Debug)]
-pub struct DynamoTable<'a> {
-    pub name: &'a str,
-    pub primary_key: &'a str,
+pub struct Table {
+    pub name: String,
+    pub primary_key: String,
 }
 
-impl<'a> DynamoTable<'a> {
+impl Table {
+    pub fn new(name: &str, primary_key: &str) -> Self {
+        Self {
+            name: name.to_owned(),
+            primary_key: primary_key.to_owned(),
+        }
+    }
+
     /// Returns an Option of the record for a given primary key.
     pub async fn get<T: DynamoRecord>(&self, db: &Dynamo, pk_value: &str) -> Option<T> {
-        trace!("DynamoTable get: {:?}", pk_value);
+        trace!("Table get: {:?}", pk_value);
 
         if !super::service_credentials() {
-            warn!("DynamoTable get: no service credentials!");
+            warn!("Table get: no service credentials!");
             return None;
         };
 
@@ -60,10 +71,10 @@ impl<'a> DynamoTable<'a> {
 
     /// Inserts a record into the table, relying on the PrimaryKey trait to determine the value of the primary key.
     pub async fn put<T: DynamoRecord>(&self, db: &Dynamo, record: &T) -> Result<(), String> {
-        trace!("DynamoTable put: {:?}", record);
+        trace!("Table put: {:?}", record);
 
         if !super::service_credentials() {
-            warn!("DynamoTable put: no service credentials!");
+            warn!("Table put: no service credentials!");
             return Err("Missing service credentials".to_owned());
         };
 
@@ -81,7 +92,7 @@ impl<'a> DynamoTable<'a> {
         };
         let mut key = HashMap::new();
         key.insert(self.primary_key.to_owned(), pk);
-        trace!("DynamoTable build_get_query key: {:?}", key);
+        trace!("Table build_get_query key: {:?}", key);
         GetItemInput {
             key,
             table_name: self.name.to_owned(),
@@ -109,7 +120,7 @@ pub trait DynamoRecord: HasPrimaryKey + Serialize + DeserializeOwned + std::fmt:
 
 #[cfg(test)]
 mod tests {
-    use super::{Dynamo, DynamoRecord, DynamoTable, HasPrimaryKey};
+    use super::{Dynamo, DynamoRecord, HasPrimaryKey, Table};
     use crate::core::Identifier;
     use serde::{Deserialize, Serialize};
 
@@ -134,9 +145,9 @@ mod tests {
             return;
         };
 
-        let test_table = DynamoTable {
-            name: "TestRecords",
-            primary_key: "identifier",
+        let test_table = Table {
+            name: "TestRecords".to_owned(),
+            primary_key: "identifier".to_owned(),
         };
 
         let db = Dynamo::new();

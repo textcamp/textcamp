@@ -1,11 +1,6 @@
 use crate::core::Identifier;
-use crate::services::db::{DynamoRecord, DynamoTable, HasPrimaryKey};
+use crate::services::db::{DynamoRecord, HasPrimaryKey};
 use serde::{Deserialize, Serialize};
-
-pub const ACCOUNTS_TABLE: DynamoTable<'static> = DynamoTable {
-    name: "Accounts",
-    primary_key: "Email",
-};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Account {

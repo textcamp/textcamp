@@ -313,7 +313,6 @@ pub struct Description {
     pub text: String,
     pub clicks: HashMap<String, String>,
 }
-
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub enum Doing {
     Nothing,
