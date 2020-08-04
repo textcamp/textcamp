@@ -1,12 +1,12 @@
-# Text Camp
+# Textcamp
 
 It's a multiplayer text based adventure game!
 
-Text Camp is barely "playable" at the moment. If you're interested in announcements down the road, please send an e-mail to peat@peat.org or follow [@textdotcamp](https://twitter.com/textdotcamp) on Twitter.
+Textcamp is barely "playable" at the moment. If you're interested in announcements down the road, please send an e-mail to peat@text.camp or follow [@textdotcamp](https://twitter.com/textdotcamp) on Twitter.
 
 ## Building
 
-Text Camp requires the latest stable Rust. To install Rust on your system, head over to https://rustup.rs/ and follow the instructions. Run `cargo build` in the git repository and wait a bit. Easy!
+Textcamp requires the latest stable Rust. To install Rust on your system, head over to https://rustup.rs/ and follow the instructions. Run `cargo build` in the git repository and wait a bit. Easy!
 
 Alternatively, if you have Docker running, you can build it there with no system dependencies. `docker build -t textcamp .` in the git repository will do the trick.
 
