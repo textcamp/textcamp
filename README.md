@@ -4,6 +4,10 @@ It's a multiplayer text based adventure game!
 
 Textcamp is barely "playable" at the moment. If you're interested in announcements down the road, please send an e-mail to peat@text.camp or follow [@textdotcamp](https://twitter.com/textdotcamp) on Twitter.
 
+## Demo
+
+You can find a playable demo at http://play.text.camp:8080/. It's a very limited environment, but it demonstrates the basic functionality in a public environment.
+
 ## Building
 
 Textcamp requires the latest stable Rust. To install Rust on your system, head over to https://rustup.rs/ and follow the instructions. Run `cargo build` in the git repository and wait a bit. Easy!
