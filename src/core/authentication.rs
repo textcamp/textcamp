@@ -69,11 +69,11 @@ impl Authentication {
 
     /// Sends an OTP link to the provided e-mail address
     pub async fn start_auth(&mut self, raw_email: &str) {
-        let otp_token = Self::new_token();
-        self.otp_tokens.insert(otp_token.clone());
         let public_url = std::env::var("PUBLIC_URL").expect("PUBLIC_URL must be set");
+        let otp_token = Self::new_token();
         let email = Self::normalize_email(raw_email);
-        self.send_email(email, public_url, otp_token).await;
+        self.send_email(email, public_url, &otp_token).await;
+        self.otp_tokens.insert(otp_token);
     }
 
     /// Validates and deletes an OTP token
@@ -107,7 +107,7 @@ impl Authentication {
         raw_email.trim().to_ascii_lowercase()
     }
 
-    async fn send_email(&self, to: String, public_url: String, otp_token: String) {
+    async fn send_email(&self, to: String, public_url: String, otp_token: &str) {
         let magic_link = format!("{}/otp?token={}", public_url, otp_token);
         info!("Sending '{}' to {}", magic_link, to);
 
