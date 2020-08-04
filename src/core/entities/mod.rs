@@ -35,7 +35,6 @@ pub trait Melee {
 }
 
 pub trait EntityStore<T: Entity + Clone> {
-    fn exists(&self, id: &Identifier) -> bool;
     fn get(&self, id: &Identifier) -> Result<T, TCError>;
     fn insert(&self, item: T);
     fn remove(&self, id: &Identifier);
@@ -90,10 +89,6 @@ impl<T: Entity + Clone + std::fmt::Debug> EntityStore<T> for HashStore<T> {
             .get(id)
             .cloned()
             .ok_or_else(|| TCError::System(format!("HashStore - could not get {:?}", id)))
-    }
-
-    fn exists(&self, id: &Identifier) -> bool {
-        self.items.read().unwrap().contains_key(id)
     }
 
     fn insert(&self, item: T) {
