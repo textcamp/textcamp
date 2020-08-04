@@ -1,6 +1,8 @@
 use crate::core::entities::*;
 use crate::core::*;
+use crate::services::db::*;
 use log::warn;
+use std::convert::TryFrom;
 
 use std::time::{Duration, Instant};
 
@@ -290,6 +292,42 @@ impl Named for Mob {
 impl Located for Mob {
     fn location(&self) -> &Identifier {
         &self.space_id
+    }
+}
+
+impl DynamoRecord for Mob {}
+
+impl HasPrimaryKey for Mob {
+    fn primary_key(&self) -> String {
+        self.entity_id.value.to_owned()
+    }
+}
+
+// TODO: Only saves the entity_id and name!!
+impl Into<Fields> for Mob {
+    fn into(self) -> Fields {
+        let mut fields = Fields::new();
+
+        fields.set_string("EntityId", self.entity_id.value.to_owned());
+        fields.set_string("Name", self.name().to_owned());
+
+        fields
+    }
+}
+
+// TODO: Only retrieves the entity_id and name!!
+impl TryFrom<Fields> for Mob {
+    type Error = String;
+
+    fn try_from(values: Fields) -> Result<Self, Self::Error> {
+        let identifier_value = values.get_string("EntityId")?;
+        let identifier = Identifier::from(identifier_value);
+
+        let mut mob = Mob::new();
+        mob.name = values.get_string("Name")?;
+        mob.entity_id = identifier;
+
+        Ok(mob)
     }
 }
 
