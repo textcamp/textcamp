@@ -30,7 +30,7 @@
 //! in the `world/` directory.
 //!
 //! (add missing_docs to warn)
-#![warn(missing_debug_implementations, rust_2018_idioms)]
+#![warn(rust_2018_idioms)]
 
 /// Actix Actors for the runtime
 pub mod actors;
