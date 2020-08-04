@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::HashMap;
 use std::fmt;
 
 use rand::distributions::Alphanumeric;
@@ -12,7 +12,6 @@ use log::{info, warn};
 
 // TODO: Associate OTP token with initiating browser
 // TODO: Expire OTP tokens after 15 minutes
-// TODO: Associate email address with an identifier
 
 /// Authentication is done by an e-mailed "magic link"
 ///
@@ -29,7 +28,7 @@ use log::{info, warn};
 ///
 /// When a player signs out, `end_session` removes their session token.
 pub struct Authentication {
-    otp_tokens: HashSet<String>,
+    otp_tokens: HashMap<String, String>, // token -> email
     email_client: Email,
 }
 
@@ -52,7 +51,7 @@ impl Authentication {
     /// Returns a new Authentication instance
     pub fn new() -> Self {
         let email_client = Email::new();
-        let otp_tokens = HashSet::new();
+        let otp_tokens = HashMap::new();
 
         Self {
             email_client,
@@ -70,17 +69,14 @@ impl Authentication {
         let public_url = std::env::var("PUBLIC_URL").expect("PUBLIC_URL must be set");
         let otp_token = Self::new_token();
         let email = Self::normalize_email(raw_email);
-        self.send_email(email, public_url, &otp_token).await;
-        self.otp_tokens.insert(otp_token);
+        self.send_email(&email, public_url, &otp_token).await;
+        self.otp_tokens.insert(otp_token, email);
     }
 
     /// Validates and deletes an OTP token
-    pub fn consume_otp_token(&mut self, token: String) -> bool {
-        if self.otp_tokens.contains(&token) {
-            self.otp_tokens.remove(&token);
-            return true;
-        }
-        false
+    pub fn consume_otp_token(&mut self, token: String) -> Option<String> {
+        let email = self.otp_tokens.remove(&token)?;
+        Some(email)
     }
 
     /// Creates a new session token for the given identifier
@@ -117,7 +113,7 @@ impl Authentication {
         raw_email.trim().to_ascii_lowercase()
     }
 
-    async fn send_email(&self, to: String, public_url: String, otp_token: &str) {
+    async fn send_email(&self, to: &str, public_url: String, otp_token: &str) {
         let magic_link = format!("{}/otp?token={}", public_url, otp_token);
         info!("Sending '{}' to {}", magic_link, to);
 
@@ -133,6 +129,8 @@ impl Authentication {
             magic_link
         );
 
-        self.email_client.send(to, cc, subject, body).await;
+        self.email_client
+            .send(to.to_owned(), cc, subject, body)
+            .await;
     }
 }

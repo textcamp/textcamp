@@ -4,8 +4,8 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Account {
-    email: String,
-    identifier: Identifier,
+    pub email: String,
+    pub identifier: Identifier,
 }
 
 impl DynamoRecord for Account {}

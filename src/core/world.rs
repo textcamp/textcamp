@@ -1,7 +1,8 @@
-use log::{error, trace};
+use log::{error, trace, warn};
 
 use crate::core::entities::*;
 use crate::core::*;
+use crate::services::{accounts::Account, db::Dynamo};
 
 use std::time::Instant;
 
@@ -124,14 +125,30 @@ impl World {
 
     /// Validates the OTP token in the e-mail authentication flow
     pub async fn authenticate_otp(&mut self, otp_token: String) -> Option<String> {
-        if self.authentication.consume_otp_token(otp_token) {
-            // TODO: restore the hero from saved state
-            let identifier = self.create_hero().await;
-            let session_token = self.authentication.start_session(&identifier).await;
-            Some(session_token)
-        } else {
-            None
-        }
+        let account_email = self.authentication.consume_otp_token(otp_token)?;
+        trace!("Good OTP, looking up account for {}", account_email);
+
+        let db = Dynamo::new();
+        let account = match db.accounts.get::<Account>(&account_email).await {
+            Some(account) => account,
+            None => {
+                trace!("No account found for {}", account_email);
+                // create a new hero and account because we don't have one!
+                let identifier = self.create_hero().await;
+                let account = Account {
+                    email: account_email.clone(),
+                    identifier,
+                };
+                if let Err(e) = db.accounts.put(&account).await {
+                    warn!("Error creating account: {:?} => {}", account, e);
+                }
+                account
+            }
+        };
+
+        trace!("Setting up session for {:?}", account);
+        let session_token = self.authentication.start_session(&account.identifier).await;
+        Some(session_token)
     }
 
     /// Validates the session token to support reconnections

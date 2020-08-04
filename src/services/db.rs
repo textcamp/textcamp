@@ -35,7 +35,7 @@ impl Dynamo {
         let client = Rc::new(DynamoDbClient::new(Region::default()));
 
         Self {
-            accounts: Table::new(client.clone(), "Accounts", "identifier"),
+            accounts: Table::new(client.clone(), "Accounts", "email"),
             mobs: Table::new(client.clone(), "Mobs", "identifier"),
             sessions: Table::new(client, "Sessions", "token"),
         }
