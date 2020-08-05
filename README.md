@@ -32,7 +32,7 @@ Ports, logging levels, and other parameters are configurable via environment var
 
 We adhere to the [Contributor Covenant](https://www.contributor-covenant.org/version/2/0/code_of_conduct/) in order to maintain a respectful and productive community.
 
-### Legal
+## Legal
 
 Copyright (c) 2018-2020 Peat Bakke (peat@peat.org).
 
