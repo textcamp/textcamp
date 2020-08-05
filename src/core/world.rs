@@ -130,7 +130,19 @@ impl World {
 
         let db = Dynamo::new();
         let account = match db.accounts.get::<Account>(&account_email).await {
-            Some(account) => account,
+            Some(account) => {
+                // we have an account; make sure the hero is loaded into the local cache
+                let hero = match db.mobs.get::<Mob>(&account.identifier.value).await {
+                    Some(h) => h,
+                    None => {
+                        // whoa, we lost the hero!! bad move!!
+                        error!("Lost hero for {:?}", account);
+                        return None;
+                    }
+                };
+                self.mobs.insert(hero);
+                account
+            }
             None => {
                 trace!("No account found for {}", account_email);
                 // create a new hero and account because we don't have one!
@@ -153,7 +165,23 @@ impl World {
 
     /// Validates the session token to support reconnections
     pub async fn authenticate_session(&self, session_token: &str) -> Option<Identifier> {
-        self.authentication.valid_session(session_token).await
+        let session = self.authentication.valid_session(session_token).await?;
+
+        let db = Dynamo::new();
+        let hero = match db.mobs.get::<Mob>(&session.value).await {
+            Some(h) => h,
+            None => {
+                // whoa, we lost the hero!! bad move!!
+                error!(
+                    "Lost hero for valid session {} => {:?}",
+                    session_token, session
+                );
+                return None;
+            }
+        };
+
+        self.mobs.insert(hero);
+        Some(session)
     }
 
     /// Creates a new hero from the "HERO" prototype, and puts them in the "ORIGIN" space.
