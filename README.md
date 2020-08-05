@@ -24,7 +24,7 @@ With a local build: `cargo run`
 
 With a Docker build: `docker run -dp 8080:8080 textcamp`
 
-In either case, you can access the running server by pointing your web browser at [https://localhost:8080/]
+In either case, you can access the running server by pointing your web browser at <https://localhost:8080/>.
 
 ## Configuration
 
