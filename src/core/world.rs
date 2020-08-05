@@ -81,6 +81,7 @@ impl World {
     pub fn command(&mut self, msg: Command) -> Vec<Update> {
         trace!("COMMAND - msg: {:?}", msg);
 
+        // TODO: Add "SAVE" command to persist the player's state
         let results = match msg.phrase.verb().to_uppercase().as_ref() {
             "LOOK" => self.look(&msg.from, msg.phrase.args().first()),
             "FIGHT" => self.fight(&msg.from, msg.phrase.args().first()),
@@ -125,6 +126,7 @@ impl World {
 
     /// Validates the OTP token in the e-mail authentication flow
     pub async fn authenticate_otp(&mut self, otp_token: String) -> Option<String> {
+        // TODO: examine how heroes are loaded from DB in different methods and refactor
         let account_email = self.authentication.consume_otp_token(otp_token)?;
         trace!("Good OTP, looking up account for {}", account_email);
 
