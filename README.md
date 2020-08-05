@@ -10,6 +10,8 @@ You can find a playable demo at <http://play.text.camp:8080/>. It's very limited
 
 ## Building
 
+![build](https://github.com/textcamp/textcamp/workflows/Rust/badge.svg)
+
 Textcamp requires the latest stable Rust. To install Rust on your system, head over to <https://rustup.rs/> and follow the instructions. Run `cargo build` in the git repository and wait a bit. Easy!
 
 Alternatively, if you have Docker running, you can build it there with no system dependencies. `docker build -t textcamp .` in the git repository will do the trick.
