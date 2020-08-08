@@ -78,7 +78,7 @@ impl World {
     }
 
     /// Input from the clients, called by the Connection actor
-    pub fn command(&mut self, msg: Command) -> Vec<Update> {
+    pub async fn command(&mut self, msg: Command) -> Vec<Update> {
         trace!("COMMAND - msg: {:?}", msg);
 
         // TODO: Add "SAVE" command to persist the player's state
@@ -91,7 +91,7 @@ impl World {
             "DROP" => self.drop(&msg.from, msg.phrase.args().first()),
             "REFRESH" => self.refresh(&msg.from),
             "TIME" => self.time(&msg.from),
-            "SAVE" => self.save(&msg.from),
+            "SAVE" => self.save(&msg.from).await,
             _ => Err(TCError::user("... What?")),
         };
 
@@ -418,13 +418,16 @@ impl World {
         Ok(vec![Update::time(mob_id, &self.clock.into())])
     }
 
-    fn save(&self, mob_id: &Identifier) -> Result<Vec<Update>, TCError> {
+    async fn save(&self, mob_id: &Identifier) -> Result<Vec<Update>, TCError> {
         let mob = self.mobs.get(mob_id)?;
         let db = crate::services::db::Dynamo::new();
 
-        match db.mobs.put(&mob) {
+        match db.mobs.put(&mob).await {
             Ok(_) => Ok(vec![Update::info(mob_id, "Saved!")]),
-            Err(e) => Err(TCError::user("Something went wrong ...")),
+            Err(e) => {
+                warn!("db.mobs.put ERROR: {}", e);
+                Err(TCError::user("Something went wrong ..."))
+            }
         }
     }
 }

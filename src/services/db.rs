@@ -5,7 +5,7 @@ use rusoto_dynamodb::{
 };
 use serde::{de::DeserializeOwned, Serialize};
 
-use tokio_core::reactor::Core;
+// use tokio_core::reactor::Core;
 
 use std::collections::HashMap;
 use std::fmt;
@@ -75,19 +75,6 @@ impl Table {
             .ok()?
             .item
             .map(|i| serde_dynamodb::from_hashmap(i).unwrap())
-    }
-
-    pub fn sync_get<T: DynamoRecord>(&self, pk_value: &str) -> Option<T> {
-        let mut core = Core::new().unwrap();
-        let result = core.run(self.get::<T>(pk_value).into());
-
-        match result {
-            Ok(o) => o,
-            Err(_) => {
-                warn!("sync_get FAILED!!");
-                None
-            }
-        }
     }
 
     /// Inserts a record into the table, relying on the PrimaryKey trait to determine the value of the primary key.
