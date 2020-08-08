@@ -15,6 +15,9 @@ debug = true # retain profiling information in release builds.
 tokio-test = "*"
 
 [dependencies]
+tokio-core = "0"
+futures = "0"
+
 # basic env and logging
 dotenv = "0"
 log = "0"

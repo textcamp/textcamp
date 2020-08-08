@@ -91,6 +91,7 @@ impl World {
             "DROP" => self.drop(&msg.from, msg.phrase.args().first()),
             "REFRESH" => self.refresh(&msg.from),
             "TIME" => self.time(&msg.from),
+            "SAVE" => self.save(&msg.from),
             _ => Err(TCError::user("... What?")),
         };
 
@@ -415,5 +416,15 @@ impl World {
 
     fn time(&self, mob_id: &Identifier) -> Result<Vec<Update>, TCError> {
         Ok(vec![Update::time(mob_id, &self.clock.into())])
+    }
+
+    fn save(&self, mob_id: &Identifier) -> Result<Vec<Update>, TCError> {
+        let mob = self.mobs.get(mob_id)?;
+        let db = crate::services::db::Dynamo::new();
+
+        match db.mobs.put(&mob) {
+            Ok(_) => Ok(vec![Update::info(mob_id, "Saved!")]),
+            Err(e) => Err(TCError::user("Something went wrong ...")),
+        }
     }
 }
