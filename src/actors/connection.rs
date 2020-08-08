@@ -20,7 +20,7 @@ const TIME_UPDATES: Duration = Duration::from_secs(10);
 /// Connection represents the interface between the player's websocket connection
 /// and the World. It maintains the connection, parses commands, sends messages
 /// to the player.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Connection {
     /// represents the identifier of the character controlled by this connection
     identifier: Identifier,
@@ -41,11 +41,11 @@ impl Connection {
         }
     }
 
-    fn send_command(&self, input: String) {
+    async fn send_command(&self, input: String) {
         match Phrase::from(&input) {
             Some(phrase) => {
                 let action = Command::new(&self.identifier, phrase);
-                let updates = self.world.write().unwrap().command(action);
+                let updates = self.world.write().unwrap().command(action).await;
                 // not all updates are for this connection, so we send them over to the delivery actor
                 // TODO: World should send everything to Delivery
                 let delivery = Delivery::from_registry();
@@ -103,7 +103,10 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for Connection {
             }
             Ok(ws::Message::Text(text)) => {
                 trace!("Received {}", text);
-                self.send_command(text);
+                let async_self = self.clone();
+                ctx.wait(actix::fut::wrap_future(async move {
+                    async_self.send_command(text).await
+                }));
             }
             Ok(ws::Message::Close(reason)) => {
                 debug!("Connection closed by client.");
