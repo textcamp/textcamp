@@ -6,7 +6,7 @@ Textcamp is barely "playable" at the moment. If you're interested in announcemen
 
 ## Demo
 
-You can find a playable demo at <http://play.text.camp:8080/>. It's very limited, but demonstrates the basic functionality in a public environment.
+You can find a playable demo at <https://play.text.camp/>. The game play is very limited, but demonstrates the basic functionality in a public environment.
 
 ## Building
 

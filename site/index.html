@@ -2,6 +2,13 @@
 <html lang="en">
 
 <head>
+    <script>
+        // redirect to a secure connection if we're in http and in production
+        if (location.protocol != 'https:' && location.hostname == 'play.text.camp') {
+            location.href = 'https:' + window.location.href.substring(window.location.protocol.length);
+        }
+    </script>
+
     <meta charset="utf-8">
     <link rel="icon" href="/favicon.png">
     <link rel="stylesheet" href="tc.css">
