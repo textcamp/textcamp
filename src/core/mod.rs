@@ -76,6 +76,12 @@ impl Identifier {
     }
 }
 
+impl fmt::Display for Identifier {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.value)
+    }
+}
+
 impl From<String> for Identifier {
     fn from(value: String) -> Self {
         Self { value }
