@@ -6,6 +6,8 @@ use crate::services::{accounts::Account, db::Dynamo};
 
 use std::time::Instant;
 
+type CommandOutput = Result<Vec<Update>, TCError>;
+
 /// Represents a command from a player, sent from the Connection actor into
 /// the shared World instance.
 #[derive(Debug)]
@@ -81,16 +83,15 @@ impl World {
     pub async fn command(&mut self, msg: Command) -> Vec<Update> {
         trace!("COMMAND - msg: {:?}", msg);
 
-        // TODO: Add "SAVE" command to persist the player's state
         let results = match msg.phrase.verb().to_uppercase().as_ref() {
-            "LOOK" => self.look(&msg.from, msg.phrase.args().first()),
-            "FIGHT" => self.fight(&msg.from, msg.phrase.args().first()),
-            "GO" => self.go(&msg.from, msg.phrase.args().first()),
-            "INVENTORY" => self.inventory(&msg.from),
-            "TAKE" => self.take(&msg.from, msg.phrase.args().first()),
-            "DROP" => self.drop(&msg.from, msg.phrase.args().first()),
-            "REFRESH" => self.refresh(&msg.from),
-            "TIME" => self.time(&msg.from),
+            "LOOK" => self.look(&msg.from, msg.phrase.args().first()).await,
+            "FIGHT" => self.fight(&msg.from, msg.phrase.args().first()).await,
+            "GO" => self.go(&msg.from, msg.phrase.args().first()).await,
+            "INVENTORY" => self.inventory(&msg.from).await,
+            "TAKE" => self.take(&msg.from, msg.phrase.args().first()).await,
+            "DROP" => self.drop(&msg.from, msg.phrase.args().first()).await,
+            "REFRESH" => self.refresh(&msg.from).await,
+            "TIME" => self.time(&msg.from).await,
             "SAVE" => self.save(&msg.from).await,
             _ => Err(TCError::user("... What?")),
         };
@@ -221,7 +222,7 @@ impl World {
 
     // ACTIONS! ---------------------------------------------------------------------------------
 
-    fn refresh(&self, mob_id: &Identifier) -> Result<Vec<Update>, TCError> {
+    async fn refresh(&self, mob_id: &Identifier) -> CommandOutput {
         let mob = self.mobs.get(mob_id)?;
         let space = self.spaces.get(&mob.space_id)?;
 
@@ -237,7 +238,7 @@ impl World {
         Ok(output)
     }
 
-    fn go(&mut self, mob_id: &Identifier, arg: Option<&String>) -> Result<Vec<Update>, TCError> {
+    async fn go(&mut self, mob_id: &Identifier, arg: Option<&String>) -> CommandOutput {
         let mut output = vec![];
 
         // parse the direction
@@ -281,7 +282,7 @@ impl World {
         Ok(output)
     }
 
-    fn look(&mut self, mob_id: &Identifier, arg: Option<&String>) -> Result<Vec<Update>, TCError> {
+    async fn look(&mut self, mob_id: &Identifier, arg: Option<&String>) -> CommandOutput {
         let mob = self.mobs.get(mob_id)?;
         let space = self.spaces.get(&mob.space_id)?;
 
@@ -312,7 +313,7 @@ impl World {
         Err(TCError::user("You don't see that here."))
     }
 
-    fn take(&mut self, mob_id: &Identifier, arg: Option<&String>) -> Result<Vec<Update>, TCError> {
+    async fn take(&mut self, mob_id: &Identifier, arg: Option<&String>) -> CommandOutput {
         let mut output = vec![];
 
         let item_name = arg.ok_or_else(|| TCError::user("Take what?"))?;
@@ -340,7 +341,7 @@ impl World {
         Ok(output)
     }
 
-    fn drop(&mut self, mob_id: &Identifier, arg: Option<&String>) -> Result<Vec<Update>, TCError> {
+    async fn drop(&mut self, mob_id: &Identifier, arg: Option<&String>) -> CommandOutput {
         let mut output = vec![];
 
         let item_name = arg.ok_or_else(|| TCError::user("Take what?"))?;
@@ -368,7 +369,7 @@ impl World {
         Ok(output)
     }
 
-    fn inventory(&self, mob_id: &Identifier) -> Result<Vec<Update>, TCError> {
+    async fn inventory(&self, mob_id: &Identifier) -> CommandOutput {
         let mob = self.mobs.get(mob_id)?;
         let inventory = &mob.inventory;
         let update = Update::inventory(mob_id, inventory);
@@ -376,7 +377,7 @@ impl World {
         Ok(vec![update])
     }
 
-    fn fight(&mut self, mob_id: &Identifier, arg: Option<&String>) -> Result<Vec<Update>, TCError> {
+    async fn fight(&mut self, mob_id: &Identifier, arg: Option<&String>) -> CommandOutput {
         let target_name = arg.ok_or_else(|| TCError::user("Fight who?"))?;
 
         let mob = self.mobs.get(mob_id)?;
@@ -414,11 +415,11 @@ impl World {
         Err(TCError::user("You don't see them here."))
     }
 
-    fn time(&self, mob_id: &Identifier) -> Result<Vec<Update>, TCError> {
+    async fn time(&self, mob_id: &Identifier) -> CommandOutput {
         Ok(vec![Update::time(mob_id, &self.clock.into())])
     }
 
-    async fn save(&self, mob_id: &Identifier) -> Result<Vec<Update>, TCError> {
+    async fn save(&self, mob_id: &Identifier) -> CommandOutput {
         let mob = self.mobs.get(mob_id)?;
         let db = crate::services::db::Dynamo::new();
 
