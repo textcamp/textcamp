@@ -1,5 +1,6 @@
 use log::{error, trace, warn};
 
+use crate::core::entities::cache::*;
 use crate::core::entities::*;
 use crate::core::*;
 use crate::services::{accounts::Account, db::Dynamo};
@@ -32,8 +33,8 @@ pub struct World {
     pub authentication: Authentication,
 
     /// Entities which receive ticks, have state, etc.
-    pub mobs: HashStore<Mob>,
-    pub spaces: HashStore<Space>,
+    pub mobs: Cache<Mob>,
+    pub spaces: Cache<Space>,
 
     /// Master list of item and mob templates
     pub item_prototypes: Prototypes<ItemPrototype>,
@@ -53,8 +54,8 @@ impl World {
     pub fn new() -> Self {
         Self {
             authentication: Authentication::new(),
-            mobs: HashStore::new(),
-            spaces: HashStore::new(),
+            mobs: Cache::new(),
+            spaces: Cache::new(),
             item_prototypes: Prototypes::default(),
             mob_prototypes: Prototypes::default(),
             clock: Clock::new(1_000_000_000),
