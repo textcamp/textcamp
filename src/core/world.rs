@@ -137,15 +137,12 @@ impl World {
         let account = match db.accounts.get::<Account>(&account_email).await {
             Some(account) => {
                 // we have an account; make sure the hero is loaded into the local cache
-                let hero = match db.mobs.get::<Mob>(&account.identifier.value).await {
-                    Some(h) => h,
-                    None => {
-                        // whoa, we lost the hero!! bad move!!
-                        error!("Lost hero for {:?}", account);
-                        return None;
-                    }
+                if self.load_hero(&account.identifier).await.is_none() {
+                    // whoa, we lost the hero!! bad move!!
+                    error!("Lost hero for {:?}", account);
+                    return None;
                 };
-                self.mobs.insert(hero);
+
                 account
             }
             None => {
@@ -159,6 +156,7 @@ impl World {
                 if let Err(e) = db.accounts.put(&account).await {
                     warn!("Error creating account: {:?} => {}", account, e);
                 }
+
                 account
             }
         };
@@ -171,21 +169,13 @@ impl World {
     /// Validates the session token to support reconnections
     pub async fn authenticate_session(&self, session_token: &str) -> Option<Identifier> {
         let session = self.authentication.valid_session(session_token).await?;
-
-        let db = Dynamo::new();
-        let hero = match db.mobs.get::<Mob>(&session.value).await {
-            Some(h) => h,
-            None => {
-                // whoa, we lost the hero!! bad move!!
-                error!(
-                    "Lost hero for valid session {} => {:?}",
-                    session_token, session
-                );
-                return None;
-            }
+        if self.load_hero(&session).await.is_none() {
+            error!(
+                "Lost hero for valid session {} => {:?}",
+                session_token, session
+            );
+            return None;
         };
-
-        self.mobs.insert(hero);
         Some(session)
     }
 
@@ -219,6 +209,42 @@ impl World {
         self.spaces.insert(origin);
 
         hero_identifier
+    }
+
+    pub async fn load_hero(&self, identifier: &Identifier) -> Option<Identifier> {
+        let db = Dynamo::new();
+        let mut hero = match db.mobs.get::<Mob>(&identifier.value).await {
+            Some(h) => h,
+            None => return None,
+        };
+
+        let identifier = hero.identifier.clone();
+
+        let mut space = match self.spaces.get(&hero.space_id) {
+            Ok(s) => s,
+            Err(e) => {
+                error!(
+                    "Couldn't find space {}, relocating hero {} to ORIGIN. {:?}",
+                    hero.space_id, hero.identifier, e
+                );
+
+                let origin = self
+                    .spaces
+                    .get(&Identifier::origin())
+                    .expect("Could not load ORIGIN space!!");
+
+                hero.space_id = origin.identifier().clone();
+
+                origin
+            }
+        };
+
+        space.population.add(hero.identifier());
+
+        self.mobs.insert(hero);
+        self.spaces.insert(space);
+
+        Some(identifier)
     }
 
     // ACTIONS! ---------------------------------------------------------------------------------
