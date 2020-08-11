@@ -1,0 +1,21 @@
+@startuml auth-flow
+actor Player
+Player -> Server: GET /
+Server --> Player: 200 index.html
+Player -> Server: POST /start-auth
+Server -> World: .start_auth()
+Server --> Player: 302 /?check-email
+World -> "AWS SES": OTP Link
+"AWS SES" --> Player: Email: OTP Link
+Player -> Server: GET /otp
+Server -> World: .authenticate_otp()
+World --> Server: OK: Session Token
+Server --> Player: OK: Session Cookie + 302 /?welcome
+Player -> Server: GET /?welcome + Session Cookie
+Server -> World: .authenticate_session()
+World --> Server: OK: Mob Identifier
+Player -> Server: websocket.send(text)
+Server -> World: .command(text)
+World --> Server: Updates
+Server --> Player: Updates
+@enduml
