@@ -168,15 +168,15 @@ impl World {
 
     /// Validates the session token to support reconnections
     pub async fn authenticate_session(&self, session_token: &str) -> Option<Identifier> {
-        let session = self.authentication.valid_session(session_token).await?;
-        if self.load_hero(&session).await.is_none() {
+        let identifier = self.authentication.valid_session(session_token).await?;
+        if self.load_hero(&identifier).await.is_none() {
             error!(
                 "Lost hero for valid session {} => {:?}",
-                session_token, session
+                session_token, identifier
             );
             return None;
         };
-        Some(session)
+        Some(identifier)
     }
 
     /// Creates a new hero from the "HERO" prototype, and puts them in the "ORIGIN" space.
