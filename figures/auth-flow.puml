@@ -1,5 +1,7 @@
 @startuml auth-flow
 actor Player
+participant Server #99FF99
+participant World #99FF99
 Player -> Server: GET /
 Server --> Player: 200 index.html
 Player -> Server: POST /start-auth
@@ -9,10 +11,14 @@ World -> "AWS SES": OTP Link
 "AWS SES" --> Player: Email: OTP Link
 Player -> Server: GET /otp
 Server -> World: .authenticate_otp()
+World -> "AWS DynamoDB": PUT Session Token
+"AWS DynamoDB" --> World: OK
 World --> Server: OK: Session Token
 Server --> Player: OK: Session Cookie + 302 /?welcome
 Player -> Server: GET /?welcome + Session Cookie
 Server -> World: .authenticate_session()
+World -> "AWS DynamoDB": GET Session Token
+"AWS DynamoDB" -> World: OK: Mob Identifier
 World --> Server: OK: Mob Identifier
 Player -> Server: websocket.send(text)
 Server -> World: .command(text)
