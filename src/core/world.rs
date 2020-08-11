@@ -130,7 +130,6 @@ impl World {
 
     /// Validates the OTP token in the e-mail authentication flow
     pub async fn authenticate_otp(&mut self, otp_token: String) -> Option<String> {
-        // TODO: examine how heroes are loaded from DB in different methods and refactor
         let account_email = self.authentication.consume_otp_token(otp_token)?;
         trace!("Good OTP, looking up account for {}", account_email);
 
@@ -212,6 +211,8 @@ impl World {
         hero_identifier
     }
 
+    /// Retrieves a Mob from DynamoDB, inserts it into the mob cache, and adds
+    /// it to it's assigned space.
     pub async fn load_hero(&self, identifier: &Identifier) -> Option<Identifier> {
         let db = Dynamo::new();
         let mut hero = match db.mobs.get::<Mob>(&identifier.value).await {
