@@ -1,27 +1,48 @@
 @startuml auth-flow
-actor Player
-participant Server #99FF99
-participant World #99FF99
-Player -> Server: GET /
-Server --> Player: 200 index.html
-Player -> Server: POST /start-auth
-Server -> World: .start_auth()
-Server --> Player: 302 /?check-email
-World -> "AWS SES": OTP Link
-"AWS SES" --> Player: Email: OTP Link
-Player -> Server: GET /otp
-Server -> World: .authenticate_otp()
-World -> "AWS DynamoDB": PUT Session Token
-"AWS DynamoDB" --> World: OK
-World --> Server: OK: Session Token
-Server --> Player: OK: Session Cookie + 302 /?welcome
-Player -> Server: GET /?welcome + Session Cookie
-Server -> World: .authenticate_session()
-World -> "AWS DynamoDB": GET Session Token
-"AWS DynamoDB" -> World: OK: Mob Identifier
-World --> Server: OK: Mob Identifier
-Player -> Server: websocket.send(text)
-Server -> World: .command(text)
-World --> Server: Updates
-Server --> Player: Updates
+skinparam ParticipantPadding 20
+skinparam BoxPadding 10
+skinparam SequenceBoxBackgroundColor #EEEEEE
+skinparam SequenceBoxBorderColor #DDDDDD
+
+actor Player as P
+
+box Textcamp
+participant "Web Server" as WS #99FF99
+participant Core #99FF99
+end box
+
+participant "AWS SES" as SES
+participant "AWS DynamoDB" as DBD
+
+== Registration & Signin ==
+
+P -> WS: GET /
+WS --> P: 200 index.html
+P -> WS: POST /start-auth
+WS -> Core: world.start_auth()
+WS --> P: 302 /?check-email
+Core -> SES: OTP Link
+SES --> P: Email: OTP Link
+P -> WS: GET /otp
+WS -> Core: world.authenticate_otp()
+Core -> DBD: PUT Session Token
+DBD --> Core: OK
+Core --> WS: OK: Session Token
+WS --> P: OK: Session Cookie + 302 /?welcome
+
+== Session Start ==
+
+P -> WS: GET / + Session Cookie
+WS -> Core: world.authenticate_session()
+Core -> DBD: GET Session Token
+DBD -> Core: OK: Mob Identifier
+Core --> WS: OK: Mob Identifier
+WS --> P: OK: WebSocket Open
+
+== Game Play ==
+
+P -> WS: websocket.send(text)
+WS -> Core: world.command(text)
+Core --> WS: Updates
+WS --> P: Updates
 @enduml
