@@ -47,7 +47,6 @@ impl Connection {
                 let action = Command::new(&self.identifier, phrase);
                 let updates = self.world.write().unwrap().command(action).await;
                 // not all updates are for this connection, so we send them over to the delivery actor
-                // TODO: World should send everything to Delivery
                 let delivery = Delivery::from_registry();
                 delivery.do_send(Deliver::new(updates));
             }
