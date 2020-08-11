@@ -55,7 +55,6 @@ impl Connection {
     }
 }
 
-// TODO: Drop for Connection, to clean up characters and message delivery for dead connections
 impl Actor for Connection {
     type Context = ws::WebsocketContext<Self>;
 
@@ -85,6 +84,8 @@ impl Actor for Connection {
 
     fn stopped(&mut self, _ctx: &mut Self::Context) {
         info!("🔌🚫 Disconnected!");
+        let delivery = Delivery::from_registry();
+        delivery.do_send(Unregister::new(self.identifier.clone()));
     }
 }
 
@@ -109,6 +110,10 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for Connection {
             }
             Ok(ws::Message::Close(reason)) => {
                 debug!("Connection closed by client.");
+                let async_self = self.clone();
+                ctx.wait(actix::fut::wrap_future(async move {
+                    async_self.send_command("quit".to_owned()).await
+                }));
                 ctx.close(reason);
             }
             Ok(unknown) => {

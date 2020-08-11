@@ -7,7 +7,7 @@ use actix_web::{
 };
 use actix_web_actors::ws;
 
-use log::info;
+use log::{info, trace};
 use serde::Deserialize;
 
 use textcamp::actors::*;
@@ -26,8 +26,14 @@ async fn ws_index(
     // check to see if we have the session token stored in the cookie.
     // if not, 401 the request.
     let session_token = match req.cookie(SESSION_COOKIE) {
-        Some(cookie) => cookie.value().to_owned(),
-        None => return Ok(HttpResponse::Unauthorized().finish().into_body()),
+        Some(cookie) => {
+            trace!("🍪 ... found cookie!");
+            cookie.value().to_owned()
+        }
+        None => {
+            trace!("🍪 ... No cookie! 👎");
+            return Ok(HttpResponse::Unauthorized().finish().into_body());
+        }
     };
 
     // attempt to validate the session token
@@ -41,8 +47,14 @@ async fn ws_index(
     // if so, open the websocket and continue
     // if not, 401 the request.
     match session_id {
-        Some(identifier) => ws::start(Connection::new(world, identifier), &req, stream),
-        None => Ok(HttpResponse::Unauthorized().finish().into_body()),
+        Some(identifier) => {
+            trace!("🍪 ... found the session! 🎉");
+            ws::start(Connection::new(world, identifier), &req, stream)
+        }
+        None => {
+            trace!("🍪 ... No session! 👎");
+            Ok(HttpResponse::Unauthorized().finish().into_body())
+        }
     }
 }
 
@@ -83,7 +95,12 @@ async fn otp(query: web::Query<OTPQuery>, data: web::Data<RwLock<World>>) -> Htt
     match result {
         Some(session_token) => {
             // Sucessful OTP token exchange. Set the session cookie and continue on!
-            let cookie = http::Cookie::new(SESSION_COOKIE, session_token);
+            // TODO: Figure out how to make this last 30 days and persist through browser restarts
+            let cookie = http::Cookie::build(SESSION_COOKIE, session_token)
+                .path("/")
+                .secure(true)
+                .finish();
+
             HttpResponse::Found()
                 .header(http::header::LOCATION, "/?welcome")
                 .cookie(cookie)

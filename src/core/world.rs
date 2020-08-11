@@ -94,6 +94,7 @@ impl World {
             "REFRESH" => self.refresh(&msg.from).await,
             "TIME" => self.time(&msg.from).await,
             "SAVE" => self.save(&msg.from).await,
+            "QUIT" => self.quit(&msg.from).await,
             _ => Err(TCError::user("... What?")),
         };
 
@@ -457,5 +458,25 @@ impl World {
                 Err(TCError::user("Something went wrong ..."))
             }
         }
+    }
+
+    async fn quit(&self, mob_id: &Identifier) -> CommandOutput {
+        // fetch the affected entities
+        let mob = self.mobs.get(mob_id)?;
+        let mut space = self.spaces.get(&mob.space_id)?;
+
+        // remove the mob from the population of the space
+        space.population.remove(mob.identifier());
+
+        // save the space
+        self.spaces.insert(space);
+
+        // axe the mob from the cache
+        self.mobs.remove(mob_id);
+
+        // say buh-bye!
+        Ok(vec![Update::info(mob_id, "See you later!")])
+
+        // TODO: Figure out how to close the connection!!
     }
 }

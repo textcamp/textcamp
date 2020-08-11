@@ -62,6 +62,14 @@ impl Handler<Register> for Delivery {
     }
 }
 
+impl Handler<Unregister> for Delivery {
+    type Result = ();
+    fn handle(&mut self, msg: Unregister, _ctx: &mut Self::Context) {
+        info!("📪 Removing recipient {:?}", msg.identifier);
+        self.addresses.remove(&msg.identifier);
+    }
+}
+
 #[derive(Debug)]
 pub struct Deliver {
     messages: Vec<Update>,
@@ -90,5 +98,20 @@ impl Register {
 }
 
 impl Message for Register {
+    type Result = ();
+}
+
+#[derive(Debug)]
+pub struct Unregister {
+    identifier: Identifier,
+}
+
+impl Unregister {
+    pub fn new(identifier: Identifier) -> Self {
+        Self { identifier }
+    }
+}
+
+impl Message for Unregister {
     type Result = ();
 }
