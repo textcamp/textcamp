@@ -1,8 +1,6 @@
 # Textcamp
 
-It's a multiplayer text based adventure game!
-
-Textcamp is barely "playable" at the moment. If you're interested in announcements down the road, please send an e-mail to <peat@text.camp> or follow [@textdotcamp](https://twitter.com/textdotcamp) on Twitter.
+It's an open source multiplayer text based adventure game!
 
 ## Demo
 
@@ -18,6 +16,8 @@ Alternatively, if you have Docker running, you can build it there with no system
 
 ## Running
 
+_Textcamp currently requires AWS DynamoDB and SES to be configured in order to run. If you'd like to help make Textcamp run as a standalone system, or with alternative databases and e-mail providers, please get in touch!_
+
 Copy the `example.env` file to `.env` and adjust the parameters to your taste.
 
 With a local build: `cargo run`
@@ -32,7 +32,16 @@ Ports, logging levels, and other parameters are configurable via environment var
 
 ## Contributing
 
-We adhere to the [Contributor Covenant](https://www.contributor-covenant.org/version/2/0/code_of_conduct/) in order to maintain a respectful and productive community.
+_We adhere to the [Contributor Covenant](https://www.contributor-covenant.org/version/2/0/code_of_conduct/) in order to maintain a respectful and productive community._
+
+Interested in chipping in? We're looking for folks interested in contributing to the stories and adventures in Textcamp, improving the documentation, and building out the platform itself.
+
+Head over to our [GitHub Projects](https://github.com/textcamp/textcamp/projects) and take a look to see how you can help and say hello!
+
+## Contact
+
+* Twitter - <https://twitter.com/textdotcamp>
+* E-Mail - <play@text.camp>
 
 ## Legal
 
