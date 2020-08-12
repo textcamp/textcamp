@@ -6,6 +6,10 @@ It's an open source multiplayer text based adventure game!
 
 You can find a playable demo at <https://play.text.camp/>. The game play is very limited, but demonstrates the basic functionality in a public environment.
 
+## Documentation
+
+We're starting to build out our [Textcamp Guidebook](https://text.camp/guidebook) for players, creators, and developers. Similar to the demo, it's very much a work in progress. 😅
+
 ## Building
 
 ![build](https://github.com/textcamp/textcamp/workflows/Rust/badge.svg)
