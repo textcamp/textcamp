@@ -29,15 +29,19 @@ impl Command {
 /// Represents the state of the world. Deep, man.
 #[derive(Debug)]
 pub struct World {
-    /// Token and authentication management
+    /// Token and authentication management.
     pub authentication: Authentication,
 
-    /// Entities which receive ticks, have state, etc.
+    /// Cache for Mobs
     pub mobs: Cache<Mob>,
+
+    /// Cache for Spaces
     pub spaces: Cache<Space>,
 
-    /// Master list of item and mob templates
+    /// Master list of Item templates
     pub item_prototypes: Prototypes<ItemPrototype>,
+
+    /// Master list of Mob templates
     pub mob_prototypes: Prototypes<MobPrototype>,
 
     /// World clock
@@ -62,7 +66,8 @@ impl World {
         }
     }
 
-    /// The fundamental unit of game time. Called by the Periodic actor.
+    /// Performs a game "tick" by iterating through all of the
+    /// cached (active) mobs and spaces.
     pub fn tick(&mut self) -> Vec<Update> {
         let mut output = vec![];
         let mut dice = Dice::new();
@@ -75,12 +80,22 @@ impl World {
         output
     }
 
+    /// Performs a round of melee combat
+    pub fn melee(&self) -> Vec<Update> {
+        let started = Instant::now();
+        let output = self.spaces.melee(&self, &mut Dice::new());
+
+        trace!("⚔️  {:?} - {:?}", started.elapsed(), output);
+
+        output
+    }
+
     /// Provides a reference to the world clock
     pub fn clock(&self) -> &Clock {
         &self.clock
     }
 
-    /// Input from the clients, called by the Connection actor
+    /// Handles input from the clients, called by the Connection actor
     pub async fn command(&mut self, msg: Command) -> Vec<Update> {
         trace!("COMMAND - msg: {:?}", msg);
 
@@ -116,16 +131,6 @@ impl World {
         trace!("COMMAND - updates: {:?}", updates);
 
         updates
-    }
-
-    /// Called by the Periodic actor to step through combat actions
-    pub fn melee(&self) -> Vec<Update> {
-        let started = Instant::now();
-        let output = self.spaces.melee(&self, &mut Dice::new());
-
-        trace!("⚔️  {:?} - {:?}", started.elapsed(), output);
-
-        output
     }
 
     /// Validates the OTP token in the e-mail authentication flow
@@ -180,7 +185,7 @@ impl World {
     }
 
     /// Creates a new hero from the "HERO" prototype, and puts them in the "ORIGIN" space.
-    /// If either can't be found, this will panic and poison the entire system.
+    /// If either can't be found, this will panic!
     pub async fn create_hero(&self) -> Identifier {
         let mut hero = self
             .mob_prototypes
@@ -211,7 +216,7 @@ impl World {
         hero_identifier
     }
 
-    /// Retrieves a Mob from DynamoDB, inserts it into the mob cache, and adds
+    /// Retrieves a Mob from long term storage, inserts it into the mob cache, and adds
     /// it to it's assigned space.
     pub async fn load_hero(&self, identifier: &Identifier) -> Option<Identifier> {
         let db = Dynamo::new();

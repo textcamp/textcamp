@@ -14,22 +14,15 @@
 //!
 //! ## Design
 //!
-//! The [Connection] actors handle the client websocket connections, and messages
+//! [World](textcamp::core::world::World) contains the shared state of the game.
+//!
+//! The [Connection] actor handles the client websocket connections, and messages
 //! passing to and from a shared instance of [World].
-//!
-//! The [Periodic] actor triggers two kinds of events in [World]: the `Tick` event,
-//! and the `Melee` event.
-//!
-//! `Tick` events represent the coarse passage of time. It updates the world clock, and
-//! propagates through all of the spaces, mobs, and items. Spaces can spawn mobs and items
-//! during their tick, and modify the state of anything in side of them.
-//!
-//! `Melee` events are triggered every second, to make combat more responsive.
 //!
 //! All spaces, mobs, and items are described in templates. You can find some examples
 //! in the `world/` directory.
-//!
-//! (add missing_docs to warn)
+
+// (add missing_docs to warn)
 #![warn(rust_2018_idioms)]
 
 /// Actix Actors for the runtime
