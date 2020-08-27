@@ -22,6 +22,7 @@ pub mod phrase;
 /// Represents the Mobs in a given Space
 pub mod population;
 pub mod prototypes;
+pub mod skills;
 pub mod spawn;
 
 /// Update messages that are sent to the client
