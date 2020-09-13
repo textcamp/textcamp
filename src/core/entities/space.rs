@@ -100,7 +100,7 @@ impl Describe for Space {
             let mut item_counts: HashMap<String, usize> = HashMap::new();
 
             self.inventory.items().iter().for_each(|i| {
-                let count = item_counts.entry(i.name().to_owned()).or_insert(0);
+                let count = item_counts.entry(i.name()).or_insert(0);
                 *count += 1;
             });
 

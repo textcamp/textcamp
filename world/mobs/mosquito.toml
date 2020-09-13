@@ -6,12 +6,22 @@ name = "mosquito"
 day = "A hungry mosquito!"
 
 [attributes]
+vision = 1
+taste = 1
+smell = 1
+hearing = 1
+touch = 1
 strength = 1
-dexterity = 5
-constitution = 2
-intelligence = 1
-wisdom = 1
-charisma = 1
+speed = 1
+agility = 1
+stamina = 1
+weight = 1
+height = 1
+memory = 1
+analysis = 1
+emotions = 1
+focus = 1
+magic = 1
 
 [[attacks]]
 name = "bite"

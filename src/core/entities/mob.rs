@@ -13,6 +13,8 @@ pub struct Mob {
     /// A globally unique identifier for this specific Mob
     pub identifier: Identifier,
 
+    pub attributes: Attributes,
+
     /// What prototype was this Mob derived from?
     pub prototype: String,
 
@@ -27,24 +29,6 @@ pub struct Mob {
 
     /// The current location of the character (See )
     pub space_id: Identifier,
-
-    /// Strength attribute
-    pub strength: usize,
-
-    /// Constitution attribute
-    pub constitution: usize,
-
-    /// Dexterity attribute
-    pub dexterity: usize,
-
-    /// Intelligence attribute
-    pub intelligence: usize,
-
-    /// Wisdom attribute
-    pub wisdom: usize,
-
-    /// Charisma attribute
-    pub charisma: usize,
 
     /// The inventory for this Mob
     pub inventory: Inventory,
@@ -69,15 +53,8 @@ impl Mob {
             description: Description::default(),
             space_id: Identifier::origin(),
             inventory: Inventory::new(),
-
-            strength: 0,
-            constitution: 0,
-            dexterity: 0,
-            intelligence: 0,
-            wisdom: 0,
-            charisma: 0,
+            attributes: Attributes::new(),
             hp: 0,
-
             enemies: vec![],
             delay: None,
             doing: Doing::Nothing,
@@ -119,12 +96,12 @@ impl Mob {
         false
     }
 
-    pub fn max_health(&self) -> usize {
-        self.constitution
+    pub fn max_health(&self) -> u8 {
+        self.attributes.stamina
     }
 
     pub fn health(&self) -> usize {
-        (self.hp * 100) / self.constitution
+        (self.hp * 100) / (self.attributes.stamina as usize)
     }
 
     pub fn is_alive(&self) -> bool {
@@ -211,8 +188,8 @@ impl Mob {
 
     fn heal(&mut self, _healer: Option<&Mob>, restore: Restore, _world: &World) -> Vec<Update> {
         let new_hp = self.hp + restore.health();
-        if new_hp > self.constitution {
-            self.hp = self.constitution;
+        if new_hp > self.max_health() as usize {
+            self.hp = self.max_health() as usize;
         } else {
             self.hp = new_hp;
         }
@@ -289,8 +266,8 @@ impl Describe for Mob {
 }
 
 impl Named for Mob {
-    fn name(&self) -> &str {
-        &self.name
+    fn name(&self) -> String {
+        self.name.clone()
     }
 }
 

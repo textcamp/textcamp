@@ -22,19 +22,8 @@ impl From<Importer> for Injector {
         }
 
         injector.prototype.prototype_name = t_item.identifier;
-        injector.prototype.description.text = template.description.day.clone();
-
-        if let Some(attrs) = template.attributes {
-            injector.prototype.strength = attrs.strength;
-            injector.prototype.dexterity = attrs.dexterity;
-            injector.prototype.constitution = attrs.constitution;
-            injector.prototype.intelligence = attrs.intelligence;
-            injector.prototype.wisdom = attrs.wisdom;
-            injector.prototype.charisma = attrs.charisma;
-
-            // default health = constitution
-            injector.prototype.hp = attrs.constitution;
-        }
+        injector.prototype.description.text = template.description.day;
+        injector.prototype.attributes = template.attributes.unwrap();
 
         injector
     }

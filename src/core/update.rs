@@ -56,11 +56,7 @@ impl Update {
     }
 
     pub fn inventory(to: &Identifier, inventory: &Inventory) -> Self {
-        let items = inventory
-            .items()
-            .iter()
-            .map(|i| i.name().to_owned())
-            .collect();
+        let items = inventory.items().iter().map(|i| i.name()).collect();
         let wrapper = Wrapper::Inventory(items);
         Update::new(to, wrapper)
     }

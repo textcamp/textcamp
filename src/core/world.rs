@@ -331,14 +331,14 @@ impl World {
 
         for character_id in &space.population.mobs {
             let maybe_mob = self.mobs.get(&character_id)?;
-            if maybe_mob.name() == name {
+            if &maybe_mob.name() == name {
                 let update = Update::character(mob_id, maybe_mob.describe(&self));
                 return Ok(vec![update]);
             }
         }
 
         for item in space.inventory.items() {
-            if item.name() == name {
+            if &item.name() == name {
                 let update = Update::item(mob_id, item.describe(&self));
                 return Ok(vec![update]);
             }
@@ -420,7 +420,7 @@ impl World {
         for local_mob in &space.population.mobs {
             let mut target_mob = self.mobs.get(&local_mob)?;
             // add the enemy if the name matches and it isn't yourself!
-            if target_mob.name() == target_name && target_mob.identifier() != mob.identifier() {
+            if &target_mob.name() == target_name && target_mob.identifier() != mob.identifier() {
                 let mut player = mob;
 
                 // both mobs become enemies!

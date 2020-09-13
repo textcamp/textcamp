@@ -25,8 +25,8 @@ impl Item {
 }
 
 impl Named for Item {
-    fn name(&self) -> &str {
-        &self.name
+    fn name(&self) -> String {
+        self.name.clone()
     }
 }
 

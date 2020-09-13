@@ -6,9 +6,19 @@ name = "hero"
 day = "An aspiring hero!"
 
 [attributes]
+vision = 10
+taste = 10
+smell = 10
+hearing = 10
+touch = 10
 strength = 10
-dexterity = 10
-constitution = 10
-intelligence = 10
-wisdom = 10
-charisma = 10
+speed = 10
+agility = 10
+stamina = 10
+weight = 10
+height = 10
+memory = 10
+analysis = 10
+emotions = 10
+focus = 10
+magic = 10

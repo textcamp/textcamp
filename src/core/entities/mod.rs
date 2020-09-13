@@ -18,7 +18,7 @@ pub trait Tickable {
 }
 
 pub trait Named {
-    fn name(&self) -> &str;
+    fn name(&self) -> String;
 }
 
 pub trait Describe {

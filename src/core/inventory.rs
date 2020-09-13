@@ -39,11 +39,15 @@ impl Inventory {
 
     pub fn add(&mut self, item: Item) {
         self.items.push(item);
-        self.items.sort_by(|a, b| a.name().cmp(b.name()));
+        self.items.sort_by_key(|a| a.name());
     }
 
     pub fn remove(&mut self, name: &str) -> Option<Item> {
-        match self.items.binary_search_by(|probe| probe.name().cmp(name)) {
+        let gross = name.to_owned();
+        match self
+            .items
+            .binary_search_by(|probe| probe.name().cmp(&gross))
+        {
             Ok(idx) => Some(self.items.remove(idx)),
             Err(_) => None,
         }

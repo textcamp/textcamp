@@ -9,12 +9,7 @@ pub struct MobPrototype {
     pub space_id: Identifier,
     pub description: Description,
     pub hp: usize,
-    pub strength: usize,
-    pub constitution: usize,
-    pub dexterity: usize,
-    pub intelligence: usize,
-    pub wisdom: usize,
-    pub charisma: usize,
+    pub attributes: Attributes,
 }
 
 impl MobPrototype {
@@ -33,14 +28,8 @@ impl Prototyped for MobPrototype {
         output.name = self.unique_name();
         output.space_id = self.space_id.clone();
         output.description = self.description.clone();
+        output.attributes = self.attributes;
         output.hp = self.hp;
-        output.strength = self.strength;
-        output.constitution = self.constitution;
-        output.dexterity = self.dexterity;
-        output.intelligence = self.intelligence;
-        output.wisdom = self.wisdom;
-        output.charisma = self.charisma;
-
         output
     }
 

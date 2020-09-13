@@ -36,3 +36,8 @@ pub mod templates;
 
 /// Database and email services
 pub mod services;
+
+// TODO: put me in utils or something, use for command verbs, skills, etc
+fn normalize_str(input: &str) -> String {
+    input.trim().to_uppercase()
+}

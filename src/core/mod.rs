@@ -1,6 +1,9 @@
 /// Provides the authentication framework
 pub mod authentication;
 
+/// Provides mob attributes (strength, intelligence, etc)
+pub mod attributes;
+
 /// In game time calculations
 pub mod clock;
 
@@ -31,6 +34,7 @@ pub mod update;
 /// Universal, shared game state
 pub mod world;
 
+pub use attributes::{Attribute, Attributes};
 pub use authentication::Authentication;
 pub use clock::{Clock, DateTime, Transition};
 pub use dice::Dice;
@@ -41,6 +45,7 @@ pub use markup::Markup;
 pub use phrase::Phrase;
 pub use population::Population;
 pub use prototypes::{ItemPrototype, MobPrototype, Prototyped, Prototypes};
+pub use skills::{Attempt, Skill};
 pub use spawn::Spawn;
 pub use update::Update;
 pub use world::{Command, World};

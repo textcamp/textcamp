@@ -1,3 +1,4 @@
+use crate::core::Attributes;
 use log::{info, trace};
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -67,16 +68,6 @@ pub struct Meta {
 #[derive(Debug, Deserialize)]
 pub struct Description {
     pub day: String,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct Attributes {
-    pub strength: usize,
-    pub dexterity: usize,
-    pub constitution: usize,
-    pub intelligence: usize,
-    pub wisdom: usize,
-    pub charisma: usize,
 }
 
 // TODO: mob 'attacks'
